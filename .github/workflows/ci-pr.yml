@@ -209,12 +209,12 @@ jobs:
       - name: 'Install GdUnit4'
         shell: bash
         run: |
-          # Download and install GdUnit4 v5.1.1
-          wget -q https://github.com/MikeSchulze/gdUnit4/archive/refs/tags/v5.1.1.zip
+          # Download and install GdUnit4 v6.0.3
+          wget -q https://github.com/godot-gdunit-labs/gdUnit4/archive/refs/tags/v6.0.3.zip
           mkdir -p addons
           sudo apt update -y
           sudo apt install libarchive-tools
-          bsdtar -xf v5.1.1.zip --strip-components=1
+          bsdtar -xf v6.0.3.zip --strip-components=1
 
       - name: 'Install test project'
         shell: bash
@@ -227,7 +227,7 @@ jobs:
         timeout-minutes: 5
         uses: ./
         with:
-          godot-version: 4.4.1
+          godot-version: 4.5
           version: 'installed'
           paths: |
             res://tests/

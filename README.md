@@ -2,9 +2,9 @@
 
 <div align="center">
 
-[![License](https://img.shields.io/github/license/godot-gdunit-labs.github.io/gdUnit4-action)](https://github.com/godot-gdunit-labs.github.io/gdUnit4-action/blob/master/LICENSE)
-[![GitHub release badge](https://badgen.net/github/release/godot-gdunit-labs.github.io/gdUnit4-action/stable)](https://github.com/godot-gdunit-labs.github.io/gdUnit4-action/releases/latest)
-[![CI/CD](https://github.com/godot-gdunit-labs.github.io/gdUnit4-action/actions/workflows/ci-dev.yml/badge.svg)](https://github.com/godot-gdunit-labs.github.io/gdUnit4-action/actions/workflows/ci-master.yml)
+[![License](https://img.shields.io/github/license/godot-gdunit-labs/gdUnit4-action)](https://github.com/godot-gdunit-labs/gdUnit4-action/blob/master/LICENSE)
+[![GitHub release badge](https://badgen.net/github/release/godot-gdunit-labs/gdUnit4-action/stable)](https://github.com/godot-gdunit-labs/gdUnit4-action/releases/latest)
+[![CI/CD](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-dev.yml/badge.svg)](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-master.yml)
 [![Discord](https://img.shields.io/discord/885149082119733269?label=discord)](https://img.shields.io/discord/885149082119733269)
 
 </div>
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+      - uses: godot-gdunit-labs/gdUnit4-action@v1
         with:
           godot-version: '4.2.1'
           paths: 'res://tests'
@@ -63,7 +63,7 @@ jobs:
 The action can be configured using various inputs to suit your testing needs. Here's a basic usage pattern:
 
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
     godot-version: '4.2.1'       # Required: Godot version to use
     paths: 'res://tests'         # Required: Test directory
@@ -116,7 +116,7 @@ The action can be configured using various inputs to suit your testing needs. He
 
 ### Basic GDScript Testing
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
     godot-version: '4.2.1'
     paths: 'res://tests'
@@ -124,7 +124,7 @@ The action can be configured using various inputs to suit your testing needs. He
 
 ### Testing with Warnings threaded as Errors
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
      godot-version: '4.2.1'
      paths: 'res://tests'
@@ -133,7 +133,7 @@ The action can be configured using various inputs to suit your testing needs. He
 
 ### C# Testing with .NET 8.0
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
     godot-version: '4.2.1'
     godot-net: true
@@ -150,7 +150,7 @@ jobs:
         godot-version: ['4.1.3', '4.2.1']
         dotnet-version: ['net7.0', 'net8.0']
     steps:
-      - uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+      - uses: godot-gdunit-labs/gdUnit4-action@v1
         with:
           godot-version: ${{ matrix.godot-version }}
           godot-net: true
@@ -160,7 +160,7 @@ jobs:
 
 ### Testing with Retries and Custom Arguments
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
     godot-version: '4.2.1'
     paths: 'res://tests'
@@ -178,7 +178,7 @@ root/
 ```
 
 ```yaml
-- uses: godot-gdunit-labs.github.io/gdUnit4-action@v1
+- uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
     godot-version: '4.2.1'
     project_dir: './MyProject/'
@@ -254,7 +254,7 @@ A: By default, warnings will be reported but won't fail the build. Use `warnings
 
 ### Related Projects
 
-- [GdUnit4](https://github.com/MikeSchulze/gdUnit4)
+- [GdUnit4](https://github.com/godot-gdunit-labs/gdUnit4)
 - [Godot Engine](https://godotengine.org)
 
 ## Contributing
@@ -274,6 +274,6 @@ This project is released under the [MIT License](./LICENSE).
 
 ## Contributors
 
-<a href="https://github.com/MikeSchulze/gdUnit4-action/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=MikeSchulze/gdUnit4-action" alt="Contributors" />
+<a href="https://github.com/godot-gdunit-labs/gdUnit4-action/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=godot-gdunit-labs/gdUnit4-action" alt="Contributors" />
 </a>
