@@ -157,7 +157,7 @@ runs:
         if [[ -d "${CLONE_DIR}" ]]; then
           mv "${CLONE_DIR}" ./.install-gdunit4
         else
-          git clone --quiet --depth 1 --branch ${{ env.GDUNIT_VERSION }} --single-branch https://github.com/MikeSchulze/gdUnit4 ./.install-gdunit4
+          git clone --quiet --depth 1 --branch ${{ env.GDUNIT_VERSION }} --single-branch https://github.com/godot-gdunit-labs/gdUnit4 ./.install-gdunit4
         fi
 
         # Remove test if no self test requested

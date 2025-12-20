@@ -1,5 +1,5 @@
 {
-  "reference": "https://github.com/MikeSchulze/gdUnit4#compatibility-overview",
+  "reference": "https://github.com/godot-gdunit-labs/gdUnit4#compatibility-overview",
   "default": {
     "godot_min": "4.5",
     "godot_max": "5.0"

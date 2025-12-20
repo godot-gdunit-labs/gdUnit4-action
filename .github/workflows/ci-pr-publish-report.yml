@@ -63,7 +63,7 @@ jobs:
         with:
           name: artifact_gdUnit4_${{ matrix.gdunit-version }}_Godot${{ matrix.godot-version }}${{ matrix.dotnet-version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: MikeSchulze/gdUnit4-action
+          repository: godot-gdunit-labs/gdUnit4-action
           run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
       - name: 'Publish Test Results'
@@ -93,6 +93,3 @@ jobs:
           fail-on-error: 'false'
           fail-on-empty: 'false'
           use-actions-summary: 'false'
-
-
-

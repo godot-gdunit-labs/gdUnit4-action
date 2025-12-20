@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MikeSchulze/gdUnit4-action.git"
+    "url": "https://github.com/godot-gdunit-labs/gdUnit4-action.git"
   },
   "private": true,
   "dependencies": {
