@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/github/license/godot-gdunit-labs/gdUnit4-action)](https://github.com/godot-gdunit-labs/gdUnit4-action/blob/master/LICENSE)
 [![GitHub release badge](https://badgen.net/github/release/godot-gdunit-labs/gdUnit4-action/stable)](https://github.com/godot-gdunit-labs/gdUnit4-action/releases/latest)
-[![CI/CD](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-dev.yml/badge.svg)](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-master.yml)
+[![CI/CD](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-master.yml/badge.svg?branch=master)](https://github.com/godot-gdunit-labs/gdUnit4-action/actions/workflows/ci-master.yml)
 [![Discord](https://img.shields.io/discord/885149082119733269?label=discord)](https://img.shields.io/discord/885149082119733269)
 
 </div>
