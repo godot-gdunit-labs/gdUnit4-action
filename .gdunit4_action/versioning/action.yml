@@ -73,7 +73,7 @@ runs:
         elif [[ "${{ inputs.version }}" == "latest" ]]; then
             echo -e "\e[33mResolving 'latest' GdUnit4 version from GitHub... \e[0m"
             
-            gdunit_version=$(git ls-remote --refs --tags https://github.com/MikeSchulze/gdUnit4 v* | sort -t '/' -k 3 -V | tail -n 1 | cut -d '/' -f 3)
+            gdunit_version=$(git ls-remote --refs --tags https://github.com/godot-gdunit-labs/gdUnit4 v* | sort -t '/' -k 3 -V | tail -n 1 | cut -d '/' -f 3)
             
             if [[ -n "${gdunit_version}" ]]; then
                 echo -e "\e[92m✓ Resolved latest version: ${gdunit_version} \e[0m"
@@ -90,24 +90,24 @@ runs:
             echo -e "\e[33mFetching GdUnit4 version from branch/tag '${{ inputs.version }}'... \e[0m"
             
             # Check if it's a tag
-            if git ls-remote --tags https://github.com/MikeSchulze/gdUnit4 | grep -q "refs/tags/${{ inputs.version }}$"; then
+            if git ls-remote --tags https://github.com/godot-gdunit-labs/gdUnit4 | grep -q "refs/tags/${{ inputs.version }}$"; then
                 echo -e "\e[92m✓ Tag '${{ inputs.version }}' found \e[0m"
             # Check if it's a branch
-            elif git ls-remote --heads https://github.com/MikeSchulze/gdUnit4 | grep -q "refs/heads/${{ inputs.version }}$"; then
+            elif git ls-remote --heads https://github.com/godot-gdunit-labs/gdUnit4 | grep -q "refs/heads/${{ inputs.version }}$"; then
                 echo -e "\e[92m✓ Branch '${{ inputs.version }}' found \e[0m"
             else
                 echo -e "\e[31m✗ Error: Branch/tag '${{ inputs.version }}' does not exist on GitHub \e[0m"
-                echo -e "\e[31m  Please verify that the branch/tag exists at: https://github.com/MikeSchulze/gdUnit4 \e[0m"
+                echo -e "\e[31m  Please verify that the branch/tag exists at: https://github.com/godot-gdunit-labs/gdUnit4 \e[0m"
                 echo ""
                 echo "Available recent tags:" >&2
-                git ls-remote --tags https://github.com/MikeSchulze/gdUnit4 | grep -oP 'refs/tags/\K.*' | grep -v '\^{}' | sort -V | tail -n 10 >&2
+                git ls-remote --tags https://github.com/godot-gdunit-labs/gdUnit4 | grep -oP 'refs/tags/\K.*' | grep -v '\^{}' | sort -V | tail -n 10 >&2
                 exit 1
             fi
             
             # Clone the specific branch to get the plugin.cfg
             CLONE_DIR="./.gdunit4-version-${{ inputs.version }}"
             
-            if git clone --quiet --depth 1 --branch "${{ inputs.version }}" --single-branch https://github.com/MikeSchulze/gdUnit4 "${CLONE_DIR}" 2>/dev/null; then
+            if git clone --quiet --depth 1 --branch "${{ inputs.version }}" --single-branch https://github.com/godot-gdunit-labs/gdUnit4 "${CLONE_DIR}" 2>/dev/null; then
                 
                 gdunit_version=$(extract_version_from_plugin "${CLONE_DIR}/addons/gdUnit4/plugin.cfg")
                 
@@ -123,7 +123,7 @@ runs:
                 fi
             else
                 echo -e "\e[31m✗ Error: Could not clone branch/tag '${{ inputs.version }}' from GitHub \e[0m"
-                echo -e "\e[31m  Please verify that the branch/tag exists at: https://github.com/MikeSchulze/gdUnit4 \e[0m"
+                echo -e "\e[31m  Please verify that the branch/tag exists at: https://github.com/godot-gdunit-labs/gdUnit4 \e[0m"
                 rm -rf "${CLONE_DIR}" 2>/dev/null
                 exit 1
             fi
