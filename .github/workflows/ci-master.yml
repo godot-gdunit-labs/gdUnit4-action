@@ -30,9 +30,9 @@ jobs:
       max-parallel: 10
       matrix:
         version: ['v5.1.1']
-        godot-version: ['4.3', '4.4', '4.4.1']
+        godot-version: ['4.4', '4.4.1', '4.5', '4.6']
         godot-status: ['stable']
-        dotnet-version: ['', 'net8.0', 'net9.0']
+        dotnet-version: ['', 'net8.0', 'net9.0', 'net10.0']
         include:
           # V6.0.0
           - version: 'v6.0.0'
