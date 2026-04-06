@@ -23,6 +23,7 @@ jobs:
     with:
       versions: '["v5.1.1"]'
       godot-versions: '["4.3", "4.4", "4.4.1"]'
+      dotnet-versions: '["", "net8.0"]'
       workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
   publish-reports-v61:
@@ -30,6 +31,7 @@ jobs:
     with:
       versions: '["v6.0.0"]'
       godot-versions: '["4.5", "4.5.1"]'
+      dotnet-versions: '["", "net8.0", "net9.0"]'
       workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
   publish-reports-v62:
@@ -37,4 +39,5 @@ jobs:
     with:
       versions: '["v6.1.0", "latest"]'
       godot-versions: '["4.5", "4.5.1", "4.6", "4.6.1", "4.6.2"]'
+      dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
       workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
