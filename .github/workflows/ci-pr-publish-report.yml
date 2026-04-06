@@ -17,79 +17,27 @@ permissions:
   checks: write
 
 jobs:
-  publish-reports:
-    runs-on: ${{ matrix.dotnet-version == 'net7.0' && 'ubuntu-22.04' || 'ubuntu-24.04' }}
-    strategy:
-      fail-fast: false
-      max-parallel: 10
-      matrix:
-        gdunit-version: ['v5.1.1']
-        godot-version: ['4.3', '4.4', '4.4.1']
-        godot-status: ['stable']
-        dotnet-version: ['', 'net8.0', 'net9.0']
-        include:
-          # V6.0.0
-          - gdunit-version: 'v6.0.0'
-            godot-version: '4.5'
-            godot-status: 'stable'
-          - gdunit-version: 'v6.0.0'
-            godot-version: '4.5'
-            godot-status: 'stable'
-            dotnet-version: 'net8.0'
-          - gdunit-version: 'v6.0.0'
-            godot-version: '4.5'
-            godot-status: 'stable'
-            dotnet-version: 'net9.0'
-          # Latest
-          - gdunit-version: 'latest'
-            godot-version: '4.5'
-            godot-status: 'stable'
-          - gdunit-version: 'latest'
-            godot-version: '4.5'
-            godot-status: 'stable'
-            dotnet-version: 'net8.0'
-          - gdunit-version: 'latest'
-            godot-version: '4.5'
-            godot-status: 'stable'
-            dotnet-version: 'net9.0'
 
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          sparse-checkout: .github
+  publish-reports-v5x:
+    uses: ./.github/workflows/shared-publish-report.yml
+    with:
+      versions: '["v5.1.1"]'
+      godot-versions: '["4.3", "4.4", "4.4.1"]'
+      dotnet-versions: '["", "net8.0"]'
+      workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: artifact_gdUnit4_${{ matrix.gdunit-version }}_Godot${{ matrix.godot-version }}${{ matrix.dotnet-version }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: godot-gdunit-labs/gdUnit4-action
-          run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
+  publish-reports-v61:
+    uses: ./.github/workflows/shared-publish-report.yml
+    with:
+      versions: '["v6.0.0"]'
+      godot-versions: '["4.5", "4.5.1"]'
+      dotnet-versions: '["", "net8.0", "net9.0"]'
+      workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
 
-      - name: 'Publish Test Results'
-        if: ${{ matrix.dotnet-version == '' }}
-        uses: dorny/test-reporter@v3
-        with:
-          name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}
-          # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
-          # We do the download manually on step `Download artifacts`
-          #artifact: artifact_gdUnit4_Godot${{ matrix.godot-version }}-${{ matrix.godot-status }}${{ matrix.gdotnet-version }}
-          path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/**/results.xml'
-          reporter: java-junit
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'false'
-
-      - name: 'Publish Test Adapter Results'
-        if: ${{ matrix.dotnet-version != '' }}
-        uses: dorny/test-reporter@v3
-        with:
-          name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}-${{ matrix.dotnet-version }}
-          # using artifact to download is broken since download-artifact@v4 see https://github.com/dorny/test-reporter/issues/363
-          # We do the download manually on step `Download artifacts`
-          #artifact: artifact_gdUnit4_Godot${{ matrix.godot-version }}-${{ matrix.godot-status }}${{ matrix.gdotnet-version }}
-          path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/*.xml'
-          reporter: dotnet-trx
-          fail-on-error: 'false'
-          fail-on-empty: 'false'
-          use-actions-summary: 'false'
+  publish-reports-v62:
+    uses: ./.github/workflows/shared-publish-report.yml
+    with:
+      versions: '["v6.1.0", "latest"]'
+      godot-versions: '["4.5", "4.5.1", "4.6", "4.6.1", "4.6.2"]'
+      dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
+      workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}

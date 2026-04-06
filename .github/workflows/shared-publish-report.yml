@@ -1,0 +1,68 @@
+name: publish-report
+
+on:
+  workflow_call:
+    inputs:
+      versions:
+        description: 'JSON array of gdUnit4 versions to publish reports for'
+        type: string
+        required: true
+      godot-versions:
+        description: 'JSON array of Godot versions to publish reports for'
+        type: string
+        required: true
+      dotnet-versions:
+        description: 'JSON array of dotnet versions (empty string for GDScript-only)'
+        type: string
+        default: '["", "net8.0", "net9.0", "net10.0"]'
+      workflow-run-id:
+        description: 'ID of the workflow run to download artifacts from'
+        type: string
+        required: true
+
+jobs:
+  publish-reports:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        gdunit-version: ${{ fromJSON(inputs.versions) }}
+        godot-version: ${{ fromJSON(inputs.godot-versions) }}
+        godot-status: ['stable']
+        dotnet-version: ${{ fromJSON(inputs.dotnet-versions) }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: .github
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: artifact_gdUnit4_${{ matrix.gdunit-version }}_Godot${{ matrix.godot-version }}${{ matrix.dotnet-version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: godot-gdunit-labs/gdUnit4-action
+          run-id: ${{ inputs.workflow-run-id }}
+
+      - name: 'Publish Test Results'
+        if: ${{ matrix.dotnet-version == '' }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}
+          path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/**/results.xml'
+          reporter: java-junit
+          fail-on-error: 'false'
+          fail-on-empty: 'false'
+          use-actions-summary: 'false'
+
+      - name: 'Publish Test Adapter Results'
+        if: ${{ matrix.dotnet-version != '' }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}-${{ matrix.dotnet-version }}
+          path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/*.xml'
+          reporter: dotnet-trx
+          fail-on-error: 'false'
+          fail-on-empty: 'false'
+          use-actions-summary: 'false'

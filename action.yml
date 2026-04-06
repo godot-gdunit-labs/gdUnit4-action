@@ -190,7 +190,7 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && (inputs.godot-net == 'true' || inputs.godot-force-mono == 'true') }}
       shell: bash
       run: |
-        sdk_version=$(echo "${{ inputs.dotnet-version }}" | sed 's/^net\([0-9]\.[0-9]\)$/\1.x/')
+        sdk_version=$(echo "${{ inputs.dotnet-version }}" | sed 's/^net\([0-9][0-9]*\.[0-9][0-9]*\)$/\1.x/')
         echo "SDK_VERSION=$sdk_version" >> "$GITHUB_ENV"
         echo "Using .NET version: '$sdk_version'"
 
