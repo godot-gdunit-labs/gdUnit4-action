@@ -236,7 +236,7 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && env.RUN_GDSCRIPT_TESTS == 'true'}}
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
           const { runTests } = require('./.gdunit4_action/unit-test/index.js')
