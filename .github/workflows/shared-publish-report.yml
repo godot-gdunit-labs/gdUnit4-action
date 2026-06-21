@@ -33,7 +33,7 @@ jobs:
         dotnet-version: ${{ fromJSON(inputs.dotnet-versions) }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: .github
 
