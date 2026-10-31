@@ -2,59 +2,59 @@ extends GdUnitTestSuite
 
 
 func before() -> void:
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(5) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func after() -> void:
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(12) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func before_test() -> void:
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(19) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func after_test() -> void:
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(26) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func test_get_line_number() -> void:
 	# test to return the current line number for an failure
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(34) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func test_get_line_number_yielded() -> void:
 	# test to return the current line number after using yield
 	await get_tree().create_timer(0.100).timeout
-	assert_failure(func() -> void: assert_int(10).is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED).is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(43) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 func test_get_line_number_multiline() -> void:
 	# test to return the current line number for an failure
 	# https://github.com/godotengine/godot/issues/43326
-	assert_failure(func() -> void: assert_int(10)\
-			.is_not_negative()\
-			.is_equal(42)) \
+	assert_failure(func() -> void: assert_that(Color.RED)\
+			.is_not_null()\
+			.is_equal(Color.GREEN)) \
 		.is_failed() \
 		.has_line(52) \
-		.has_message("Expecting:\n '42'\n but was\n '10'")
+		.has_message("Expecting:\n 'Color%s'\n but was\n 'Color%s'" % [Color.GREEN, Color.RED])
 
 
 @warning_ignore("unsafe_method_access")
