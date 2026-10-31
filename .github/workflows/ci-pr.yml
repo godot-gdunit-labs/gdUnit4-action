@@ -85,7 +85,7 @@ jobs:
         uses: ./
         with:
           godot-version: 4.5
-          version: 'v6.1.0'
+          version: 'latest'
           headless: true
           arguments: '--ignoreHeadlessMode'
           paths: |
@@ -111,7 +111,7 @@ jobs:
         uses: ./
         with:
           godot-version: 4.5
-          version: 'v6.1.0'
+          version: 'latest'
           headless: true
           paths: |
             res://tests/
@@ -141,7 +141,7 @@ jobs:
         uses: ./
         with:
           godot-version: 4.5
-          version: 'v6.1.0'
+          version: 'latest'
           godot-net: true
           dotnet-version: 'net8.0'
           headless: true
