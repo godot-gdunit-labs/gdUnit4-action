@@ -135,6 +135,8 @@ jobs:
           fi
 
       - name: 'Run C# tests in headless mode'
+        env:
+          DOTNET_VERSION: 'net8.0'
         timeout-minutes: 5
         uses: ./
         with:
