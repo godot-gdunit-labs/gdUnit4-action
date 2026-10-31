@@ -97,8 +97,9 @@ jobs:
       - name: 'Verify test run in headless mode'
         shell: bash
         run: |
-          if [[ '${{ steps.test-headless.outputs.exit_code }}' != '0' ]]; then
+          if [[ '${{ steps.test-headless.outcome }}' != 'success' ]]; then
             echo 'ERROR: Tests in headless mode should succeed'
+            echo 'Actual outcome: ${{ steps.test-headless.outcome }}'
             echo 'Actual exit code: ${{ steps.test-headless.outputs.exit_code }}'
             exit 1
           fi
