@@ -45,6 +45,107 @@ jobs:
       dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
 
 
+  js-tests:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    name: 'Action script tests'
+
+    steps:
+      - name: 'Checkout gdUnit4-action'
+        uses: actions/checkout@v7
+
+      - name: 'Run action script tests'
+        shell: bash
+        run: npm test
+
+
+  action-headless:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+    name: 'action in headless mode'
+
+    steps:
+      - name: 'Checkout gdUnit4-action'
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: 'Install test project'
+        shell: bash
+        run: |
+          mv -f .github/workflows/resources/* .
+
+      # GdUnit4 v6 needs '--ignoreHeadlessMode' to run in headless mode, v7 supports it by default
+      - name: 'Run tests in headless mode'
+        id: test-headless
+        timeout-minutes: 5
+        uses: ./
+        with:
+          godot-version: 4.5
+          headless: true
+          arguments: '--ignoreHeadlessMode'
+          paths: |
+            res://tests/
+          timeout: 2
+          publish-report: false
+          report-name: action_headless
+
+      - name: 'Verify test run in headless mode'
+        shell: bash
+        run: |
+          if [[ '${{ steps.test-headless.outputs.exit_code }}' != '0' ]]; then
+            echo 'ERROR: Tests in headless mode should succeed'
+            echo 'Actual exit code: ${{ steps.test-headless.outputs.exit_code }}'
+            exit 1
+          fi
+
+      - name: 'Run tests in headless mode without --ignoreHeadlessMode'
+        id: test-headless-not-supported
+        continue-on-error: true
+        timeout-minutes: 5
+        uses: ./
+        with:
+          godot-version: 4.5
+          headless: true
+          paths: |
+            res://tests/
+          timeout: 2
+          publish-report: false
+          upload-report: false
+          report-name: action_headless_not_supported
+
+      - name: 'Verify headless mode not supported by GdUnit4 v6'
+        shell: bash
+        run: |
+          if [[ '${{ steps.test-headless-not-supported.outcome }}' != 'failure' ]]; then
+            echo 'ERROR: GdUnit4 v6 must refuse the headless mode without --ignoreHeadlessMode'
+            echo 'Actual outcome: ${{ steps.test-headless-not-supported.outcome }}'
+            exit 1
+          fi
+          if [[ '${{ steps.test-headless-not-supported.outputs.exit_code }}' != '103' ]]; then
+            echo 'ERROR: Expected exit code 103 (headless mode not supported)'
+            echo 'Actual exit code: ${{ steps.test-headless-not-supported.outputs.exit_code }}'
+            exit 1
+          fi
+
+      - name: 'Run C# tests in headless mode'
+        timeout-minutes: 5
+        uses: ./
+        with:
+          godot-version: 4.5
+          godot-net: true
+          dotnet-version: 'net8.0'
+          headless: true
+          paths: 'res://tests/mono'
+          timeout: 2
+          retries: 3 # We have set the number of repetitions to 3 because Godot .Net randomly crashes during C# tests
+          publish-report: false
+          report-name: action_headless_net
+
+
   compatibility-check:
     runs-on: ubuntu-24.04
     permissions:
@@ -442,6 +543,8 @@ jobs:
       contents: read
     name: 'Final Results'
     needs:
+      - js-tests
+      - action-headless
       - compatibility-check
       - unit-tests-v5x
       - unit-tests-v61
