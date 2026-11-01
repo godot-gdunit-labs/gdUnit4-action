@@ -1,7 +1,7 @@
 name: Update Major Version Release Tag
 run-name: Update release tag ${{ github.event.release.tag_name || github.event.inputs.release_tag }}
 
-on:
+on:  # yamllint disable-line rule:truthy
   release:
     types: [published]
   workflow_dispatch:
@@ -33,79 +33,79 @@ jobs:
           # Configure Git
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          
+
           # Get the release tag (from release event or manual input)
           if [[ "${{ github.event_name }}" == "release" ]]; then
             RELEASE_TAG="${{ github.event.release.tag_name }}"
           else
             RELEASE_TAG="${{ github.event.inputs.release_tag }}"
           fi
-          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           echo "Release tag: $RELEASE_TAG"
-          
+
           # Extract major version
           if [[ $RELEASE_TAG =~ ^v([0-9]+)\. ]]; then
             MAJOR_VERSION="v${BASH_REMATCH[1]}"
-            echo "major_version=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+            echo "major_version=$MAJOR_VERSION" >> "$GITHUB_OUTPUT"
             echo "Major version: $MAJOR_VERSION"
           else
             echo "❌ Could not update major version tag because the release tag '$RELEASE_TAG' format is invalid."
             echo "Expected format: v{MAJOR}.{MINOR}.{PATCH} (e.g., v1.2.3)"
             exit 1
           fi
-          
+
           # Store original tag commit if it exists
           ORIGINAL_COMMIT=""
           HAD_TAG=false
-          if git rev-parse --verify refs/tags/$MAJOR_VERSION >/dev/null 2>&1; then
-            ORIGINAL_COMMIT=$(git rev-parse $MAJOR_VERSION)
+          if git rev-parse --verify "refs/tags/$MAJOR_VERSION" >/dev/null 2>&1; then
+            ORIGINAL_COMMIT=$(git rev-parse "$MAJOR_VERSION")
             HAD_TAG=true
             echo "Original $MAJOR_VERSION tag pointed to: $ORIGINAL_COMMIT"
           else
             echo "No existing $MAJOR_VERSION tag found"
           fi
-          
+
           # Update the tag
           echo "Updating $MAJOR_VERSION tag to point to $RELEASE_TAG..."
-          
+
           # Remove existing tag if it exists
           if $HAD_TAG; then
             echo "Deleting existing $MAJOR_VERSION tag..."
-            git tag -d $MAJOR_VERSION
-            git push --delete origin $MAJOR_VERSION
+            git tag -d "$MAJOR_VERSION"
+            git push --delete origin "$MAJOR_VERSION"
           fi
-          
+
           # Create new tag pointing to the release
           echo "Creating new $MAJOR_VERSION tag..."
-          git tag $MAJOR_VERSION $RELEASE_TAG
-          git push origin $MAJOR_VERSION
-          
+          git tag "$MAJOR_VERSION" "$RELEASE_TAG"
+          git push origin "$MAJOR_VERSION"
+
           # Verify the update
           echo "Verifying that $MAJOR_VERSION now points to the same commit as $RELEASE_TAG..."
-          MAJOR_COMMIT=$(git rev-parse $MAJOR_VERSION)
-          RELEASE_COMMIT=$(git rev-parse $RELEASE_TAG)
-          
+          MAJOR_COMMIT=$(git rev-parse "$MAJOR_VERSION")
+          RELEASE_COMMIT=$(git rev-parse "$RELEASE_TAG")
+
           if [ "$MAJOR_COMMIT" == "$RELEASE_COMMIT" ]; then
             echo "✅ Verification successful: $MAJOR_VERSION points to the same commit as $RELEASE_TAG"
           else
             echo "❌ Verification failed: $MAJOR_VERSION points to $MAJOR_COMMIT, but $RELEASE_TAG points to $RELEASE_COMMIT"
-          
+
             # Rollback if verification failed and had original tag
             if $HAD_TAG; then
               echo "⚠️ Verification failed - rolling back $MAJOR_VERSION tag to original commit: $ORIGINAL_COMMIT"
-          
+
               # Delete the failed tag
-              git tag -d $MAJOR_VERSION
-              git push --delete origin $MAJOR_VERSION
-          
+              git tag -d "$MAJOR_VERSION"
+              git push --delete origin "$MAJOR_VERSION"
+
               # Restore the original tag
-              git tag $MAJOR_VERSION $ORIGINAL_COMMIT
-              git push origin $MAJOR_VERSION
-          
+              git tag "$MAJOR_VERSION" "$ORIGINAL_COMMIT"
+              git push origin "$MAJOR_VERSION"
+
               echo "✅ Successfully rolled back $MAJOR_VERSION tag to original commit: $ORIGINAL_COMMIT"
             fi
-          
+
             exit 1
           fi
-          
+
           echo "✅ Successfully updated $MAJOR_VERSION tag to point to $RELEASE_TAG"

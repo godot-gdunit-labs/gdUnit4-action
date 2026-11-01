@@ -49,7 +49,9 @@ inputs:
     required: false
     default: 'false'
   headless:
-    description: 'Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs "--ignoreHeadlessMode"). Tests that need rendered output (e.g. screenshots) must run without it.'
+    description: >-
+      Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs "--ignoreHeadlessMode").
+      Tests that need rendered output (e.g. screenshots) must run without it.
     required: false
     default: 'false'
   publish-report:
@@ -89,7 +91,7 @@ runs:
     - shell: bash
       run: |
         echo "GITHUB_ACTION_PATH: ${GITHUB_ACTION_PATH}"
-        [ -d ./.gdunit4_action ] || (mkdir -p ./.gdunit4_action/ && cp -r $GITHUB_ACTION_PATH/.gdunit4_action/* ./.gdunit4_action/)      
+        [ -d ./.gdunit4_action ] || (mkdir -p ./.gdunit4_action/ && cp -r $GITHUB_ACTION_PATH/.gdunit4_action/* ./.gdunit4_action/)
 
     # Determine the actual GdUnit4 version that will be used
     - name: 'Determine GdUnit4 Version'
@@ -146,7 +148,7 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && env.RUN_GDSCRIPT_TESTS == 'true' }}
       shell: bash
       run: |
-        
+
         echo -e "\e[33m Change to project directory: ${{ inputs.project_dir }} \e[0m"
         cd "${{ inputs.project_dir }}"
 
@@ -169,7 +171,7 @@ runs:
           echo "Delete 'addons/gdUnit4/test'"
           rm -rf ./.install-gdunit4/addons/gdUnit4/test
         fi
-        
+
         # Delete first possible outdated artifacts
         if [[ -d ./addons/gdUnit4 ]]; then
           echo -e "\e[33m Info: Found a previous installation of GdUnit4, deleting it now. \e[0m"
@@ -181,10 +183,10 @@ runs:
         mkdir -p ./addons/gdUnit4/
         cp -R ./.install-gdunit4/addons/gdUnit4 ./addons
         chmod +x ./addons/gdUnit4/runtest.sh
-        
+
         # Cleanup
         rm -rf ./.install-gdunit4
-        
+
         echo -e "\e[34m Installed plugins\e[0m"
         echo -e "\e[34m -----------------\e[0m"
         ls --color=auto -lsA ./addons
@@ -209,7 +211,7 @@ runs:
       shell: bash
       run: |
         cd "${{ inputs.project_dir }}"
-        
+
         # for gdunit version less than 4.2.2 we need to load api version 4.2.1.1
         gdUnitVersion=$(echo "${{ inputs.version }}" | sed 's/^v//; s/\.//g')
         if [[ ${gdUnitVersion} < 422 ]]; then
@@ -218,7 +220,7 @@ runs:
           dotnet add package gdUnit4.api --version 4.2.1
           dotnet add package gdUnit4.test.adapter --version 1.0.0
         fi
-        
+
         dotnet --version
         dotnet build
         dotnet list package
@@ -280,9 +282,13 @@ runs:
           cp $GITHUB_ACTION_PATH/.gdunit4_action/.runsettings .
         fi
         if ${{ inputs.headless == 'true' }}; then
-          dotnet test --no-build --settings .runsettings --results-directory ./reports --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" -- GdUnit4.Parameters="--headless --audio-driver Dummy ${{ inputs.arguments }}"
+          dotnet test --no-build --settings .runsettings --results-directory ./reports \
+            --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" \
+            -- GdUnit4.Parameters="--headless --audio-driver Dummy ${{ inputs.arguments }}"
         else
-          xvfb-run --auto-servernum dotnet test --no-build --settings .runsettings --results-directory ./reports --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${{ inputs.arguments }}"
+          xvfb-run --auto-servernum dotnet test --no-build --settings .runsettings --results-directory ./reports \
+            --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" \
+            -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${{ inputs.arguments }}"
         fi
 
     - name: 'Publish .Net Unit Test Reports'

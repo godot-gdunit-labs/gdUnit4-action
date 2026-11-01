@@ -9,7 +9,8 @@
 
 </div>
 
-This GitHub Action automates the execution of GdUnit4 (GDScript) and GdUnit4Net (CSharpScript) unit tests within the Godot Engine 4.x environment. It provides flexibility in configuring the Godot version, GdUnit4 version, test paths, and other parameters to suit your testing needs.
+This GitHub Action automates the execution of GdUnit4 (GDScript) and GdUnit4Net (CSharpScript) unit tests within the Godot Engine 4.x environment. It
+provides flexibility in configuring the Godot version, GdUnit4 version, test paths, and other parameters to suit your testing needs.
 
 ## Table of Contents
 
@@ -28,17 +29,20 @@ This GitHub Action automates the execution of GdUnit4 (GDScript) and GdUnit4Net 
 ## Requirements
 
 ### Godot Compatibility
-- Godot 4.x (4.0.0 and above)
-- Both standard and .NET versions supported
-- Tested with stable, RC, and dev builds
+
+* Godot 4.x (4.0.0 and above)
+* Both standard and .NET versions supported
+* Tested with stable, RC, and dev builds
 
 ### For C# Testing
-- .NET SDK 7.0 or 8.0
-- Godot .NET version
+
+* .NET SDK 7.0 or 8.0
+* Godot .NET version
 
 ### System Requirements
-- GitHub Actions runner (Ubuntu latest recommended)
-- Git with LFS support for larger projects
+
+* GitHub Actions runner (Ubuntu latest recommended)
+* Git with LFS support for larger projects
 
 ## Quick Start
 
@@ -75,47 +79,49 @@ The action can be configured using various inputs to suit your testing needs. He
 
 ### Essential Parameters
 
-| Parameter        | Required | Default | Description |
-|-----------------|----------|---------|-------------|
-| paths           | Yes      |         | Test directories (comma/newline-separated) |
+| Parameter | Required | Default | Description                                |
+| --------- | -------- | ------- | ------------------------------------------ |
+| paths     | Yes      |         | Test directories (comma/newline-separated) |
 
 ### Godot Configuration
 
 | Parameter        | Required | Default | Description                                 |
-|-----------------|----------|---------|---------------------------------------------|
-| godot-version   | Yes      |         | Godot version (e.g., "4.2.1")               |
-| godot-status    | No       | stable  | Godot status (stable/rc1/dev1)              |
-| godot-net       | No       | false   | Enable Godot .NET for C# tests              |
-| godot-force-mono| No       | false   | Force using Godot Net to run GDScript tests |
+| ---------------- | -------- | ------- | ------------------------------------------- |
+| godot-version    | Yes      |         | Godot version (e.g., "4.2.1")               |
+| godot-status     | No       | stable  | Godot status (stable/rc1/dev1)              |
+| godot-net        | No       | false   | Enable Godot .NET for C# tests              |
+| godot-force-mono | No       | false   | Force using Godot Net to run GDScript tests |
 
 ### .NET Configuration
 
-| Parameter          | Required | Default | Description |
-|-------------------|----------|---------|-------------|
-| dotnet-version    | No       | net8.0  | .NET version (net7.0/net8.0) |
+| Parameter         | Required | Default | Description                                                                      |
+| ----------------- | -------- | ------- | -------------------------------------------------------------------------------- |
+| dotnet-version    | No       | net8.0  | .NET version (net7.0/net8.0)                                                     |
 | console-verbosity | No       | minimal | Console logger verbosity for C# tests (quiet/minimal/normal/detailed/diagnostic) |
 
 ### Test Configuration
 
-| Parameter       | Required | Default | Description                                  |
-|----------------|----------|---------|----------------------------------------------|
-| version        | No       | latest  | The GdUnit4 version to use (GDScript plugin) |
-| timeout        | No       | 10      | Test timeout (minutes)                       |
-| retries        | No       | 0       | Number of retry attempts                     |
-| arguments      | No       |         | Additional GdUnit4 arguments                 |
-| warnings-as-errors| No       | false   | Treat test warnings as errors |
-| headless       | No       | false   | Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs `--ignoreHeadlessMode`) |
+| Parameter          | Required | Default | Description                                                                                                              |
+| ------------------ | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| version            | No       | latest  | The GdUnit4 version to use (GDScript plugin)                                                                             |
+| timeout            | No       | 10      | Test timeout (minutes)                                                                                                   |
+| retries            | No       | 0       | Number of retry attempts                                                                                                 |
+| arguments          | No       |         | Additional GdUnit4 arguments                                                                                             |
+| warnings-as-errors | No       | false   | Treat test warnings as errors                                                                                            |
+| headless           | No       | false   | Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs `--ignoreHeadlessMode`) |
+
 ### Reporting Configuration
 
-| Parameter       | Required | Default | Description |
-|----------------|----------|---------|-------------|
-| publish-report | No       | true    | Enable test report publishing |
-| upload-report  | No       | true    | Enable report artifact upload |
-| report-name    | No       | test-report.xml | Report filename |
+| Parameter      | Required | Default         | Description                   |
+| -------------- | -------- | --------------- | ----------------------------- |
+| publish-report | No       | true            | Enable test report publishing |
+| upload-report  | No       | true            | Enable report artifact upload |
+| report-name    | No       | test-report.xml | Report filename               |
 
 ## Examples
 
 ### Basic GDScript Testing
+
 ```yaml
 - uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
@@ -124,6 +130,7 @@ The action can be configured using various inputs to suit your testing needs. He
 ```
 
 ### Testing with Warnings threaded as Errors
+
 ```yaml
 - uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
@@ -133,6 +140,7 @@ The action can be configured using various inputs to suit your testing needs. He
 ```
 
 ### C# Testing with .NET 8.0
+
 ```yaml
 - uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
@@ -143,6 +151,7 @@ The action can be configured using various inputs to suit your testing needs. He
 ```
 
 ### Matrix Testing
+
 ```yaml
 jobs:
   test:
@@ -160,8 +169,10 @@ jobs:
 ```
 
 ### Headless Testing
+
 GdUnit4 v7 runs tests in headless mode by default. With `headless: true` the action runs Godot without a virtual display, which is faster.
-Godot does not render anything in headless mode, so run tests that need rendered output, e.g. screenshots, shader output or visibility notifiers, in a separate job without it.
+Godot does not render anything in headless mode, so run tests that need rendered output, e.g. screenshots, shader output or visibility notifiers, in a
+separate job without it.
 ```yaml
 jobs:
   unit-tests:
@@ -186,6 +197,7 @@ jobs:
 GdUnit4 v6 refuses to run in headless mode and ends with the exit code 103, add `arguments: '--ignoreHeadlessMode'` to run it anyway.
 
 ### Testing with Retries and Custom Arguments
+
 ```yaml
 - uses: godot-gdunit-labs/gdUnit4-action@v1
   with:
@@ -196,6 +208,7 @@ GdUnit4 v6 refuses to run in headless mode and ends with the exit code 103, add 
 ```
 
 ### Custom Project Structure
+
 For projects with non-standard layout:
 ```bash
 root/
@@ -217,17 +230,17 @@ root/
 ### Common Issues
 
 1. **Test Discovery Failures**
-    - Ensure test paths are correct and use `res://` prefix
-    - Check file permissions on test directories
+    * Ensure test paths are correct and use `res://` prefix
+    * Check file permissions on test directories
 
 2. **C# Test Issues**
-    - Verify correct .NET SDK version
-    - Check Godot .NET compatibility
-    - Ensure proper project structure
+    * Verify correct .NET SDK version
+    * Check Godot .NET compatibility
+    * Ensure proper project structure
 
 3. **Timeout Issues**
-    - Increase timeout value for large test suites
-    - Consider splitting tests across multiple jobs
+    * Increase timeout value for large test suites
+    * Consider splitting tests across multiple jobs
 
 ### Debug Logging
 
@@ -246,12 +259,15 @@ arguments: '--verbose'          # For Godot engine debug output
 ## Performance Optimization
 
 ### Caching
+
 The action automatically caches:
-- Godot binaries
-- .NET packages
-- Project cache
+
+* Godot binaries
+* .NET packages
+* Project cache
 
 ### Best Practices
+
 1. Use specific versions instead of 'latest'
 2. Optimize test discovery paths
 3. Implement parallel test execution where possible
@@ -260,7 +276,9 @@ The action automatically caches:
 ## Security
 
 ### Fork Considerations
+
 When running tests from forked repositories:
+
 1. Set `publish-report: false` to avoid permission issues
 2. Use custom `report-name` for artifact identification
 3. Be cautious with sensitive test data
@@ -268,21 +286,25 @@ When running tests from forked repositories:
 ## FAQ
 
 ### Q: Which Godot versions are supported?
+
 A: All Godot 4.x versions are supported, including stable, RC, and dev builds.
 
 ### Q: Can I test both GDScript and C# in the same workflow?
+
 A: Yes, use separate jobs or matrix testing with different configurations.
 
 ### Q: How do I handle flaky tests?
+
 A: Use the `retries` parameter to automatically retry failed tests.
 
 ### Q: How do I handle test warnings?
+
 A: By default, warnings will be reported but won't fail the build. Use `warnings-as-errors: true` to treat warnings as failures.
 
 ### Related Projects
 
-- [GdUnit4](https://github.com/godot-gdunit-labs/gdUnit4)
-- [Godot Engine](https://godotengine.org)
+* [GdUnit4](https://github.com/godot-gdunit-labs/gdUnit4)
+* [Godot Engine](https://godotengine.org)
 
 ## Contributing
 
