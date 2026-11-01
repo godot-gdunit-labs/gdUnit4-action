@@ -48,6 +48,10 @@ inputs:
     description: 'Treat test warnings as errors (return code 101 will be treated as error)'
     required: false
     default: 'false'
+  headless:
+    description: 'Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs "--ignoreHeadlessMode"). Tests that need rendered output (e.g. screenshots) must run without it.'
+    required: false
+    default: 'false'
   publish-report:
     description: 'Enable disable to publish the report. To disable to run on forked repositories.'
     required: false
@@ -246,7 +250,8 @@ runs:
             arguments: `${{ inputs.arguments }}`,
             timeout: ${{ inputs.timeout }},
             retries: ${{ inputs.retries }},
-            warningsAsErrors : ${{ inputs.warnings-as-errors }}
+            warningsAsErrors : ${{ inputs.warnings-as-errors }},
+            headless: ${{ inputs.headless == 'true' }}
           };
           const exitCode =  await runTests(args, core);
           core.setOutput('exit_code', exitCode);
@@ -274,7 +279,11 @@ runs:
           echo "No project specific '.runsettings' found, using action default '.runsettings'"
           cp $GITHUB_ACTION_PATH/.gdunit4_action/.runsettings .
         fi
-        xvfb-run --auto-servernum dotnet test --no-build --settings .runsettings --results-directory ./reports --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${{ inputs.arguments }}"
+        if ${{ inputs.headless == 'true' }}; then
+          dotnet test --no-build --settings .runsettings --results-directory ./reports --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" -- GdUnit4.Parameters="--headless --audio-driver Dummy ${{ inputs.arguments }}"
+        else
+          xvfb-run --auto-servernum dotnet test --no-build --settings .runsettings --results-directory ./reports --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${{ inputs.arguments }}"
+        fi
 
     - name: 'Publish .Net Unit Test Reports'
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && inputs.publish-report == 'true' && env.RUN_GDSCRIPT_TESTS == 'false' }}

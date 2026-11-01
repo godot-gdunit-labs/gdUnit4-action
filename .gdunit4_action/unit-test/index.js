@@ -21,6 +21,33 @@ function console_info(message) {
 }
 
 
+function buildTestCommand(pathsArray, args, headless) {
+  const testArgs = [
+    "--continue",
+    ...pathsArray.map((path) => `--add ${path}`),
+    `${args}`
+  ];
+  if (headless) {
+    return {
+      command: "./addons/gdUnit4/runtest.sh",
+      args: ["--headless", "--audio-driver Dummy", ...testArgs]
+    };
+  }
+  return {
+    command: "xvfb-run",
+    args: [
+      "--auto-servernum",
+      "./addons/gdUnit4/runtest.sh",
+      "--audio-driver Dummy",
+      "--display-driver x11",
+      "--rendering-driver opengl3",
+      "--single-window",
+      ...testArgs
+    ]
+  };
+}
+
+
 async function runTests(exeArgs, core) {
   try {
     const {
@@ -29,7 +56,8 @@ async function runTests(exeArgs, core) {
       arguments = '',
       timeout = 10,
       retries = 0,
-      warningsAsErrors = false
+      warningsAsErrors = false,
+      headless = false
     } = exeArgs;
     // Split by newline or comma, map, trim, and filter empty strings
     const pathsArray = paths.split(/[\r\n,]+/).map((entry) => entry.trim()).filter(Boolean);
@@ -41,31 +69,22 @@ async function runTests(exeArgs, core) {
       core.warning(`Use only the first entry of paths, ${pathsArray}!`);
     }
 
-    const args = [
-      "--auto-servernum",
-      "./addons/gdUnit4/runtest.sh",
-      "--audio-driver Dummy",
-      "--display-driver x11",
-      "--rendering-driver opengl3",
-      "--single-window",
-      "--continue",
-      ...pathsArray.map((path) => `--add ${path}`),
-      `${arguments}`
-    ];
+    const {command, args} = buildTestCommand(pathsArray, arguments, headless);
 
     const working_dir = getProjectPath(project_dir);
-    console_info(`Running GdUnit4 ${process.env.GDUNIT_VERSION} tests at ${working_dir} with arguments: ${args}`);
+    console_info(`Running GdUnit4 ${process.env.GDUNIT_VERSION} tests at ${working_dir} with: ${command} ${args.join(" ")}`);
     console_info(`project_dir: ${project_dir}`);
     console_info(`arguments: ${arguments}`);
     console_info(`timeout: ${timeout}m`);
     console_info(`retries: ${retries}`);
     console_info(`warningsAsErrors: ${warningsAsErrors}`);
+    console_info(`headless: ${headless}`);
 
     let retriesCount = 0;
     let exitCode = 0;
 
     while (retriesCount <= retries) {
-      const child = spawnSync("xvfb-run", args, {
+      const child = spawnSync(command, args, {
         cwd: working_dir,
         timeout: timeout * 1000 * 60,
         encoding: "utf-8",
@@ -110,7 +129,7 @@ async function runTests(exeArgs, core) {
         }
         break;
       case RETURN_ERROR_HEADLESS_NOT_SUPPORTED:
-        core.setFailed('Headless mode not supported');
+        core.setFailed(`Headless mode is not supported by GdUnit4 ${process.env.GDUNIT_VERSION}, use GdUnit4 v7 or newer, or add '--ignoreHeadlessMode' to the arguments`);
         break;
       case RETURN_ERROR_GODOT_VERSION_NOT_SUPPORTED:
         core.setFailed('Godot version not supported');
@@ -127,5 +146,6 @@ async function runTests(exeArgs, core) {
 }
 
 module.exports = {
+  buildTestCommand,
   runTests
 };

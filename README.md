@@ -104,6 +104,7 @@ The action can be configured using various inputs to suit your testing needs. He
 | retries        | No       | 0       | Number of retry attempts                     |
 | arguments      | No       |         | Additional GdUnit4 arguments                 |
 | warnings-as-errors| No       | false   | Treat test warnings as errors |
+| headless       | No       | false   | Run the tests in headless mode without a virtual display, requires GdUnit4 v7 or newer (v6 needs `--ignoreHeadlessMode`) |
 ### Reporting Configuration
 
 | Parameter       | Required | Default | Description |
@@ -157,6 +158,32 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
           paths: 'res://tests'
 ```
+
+### Headless Testing
+GdUnit4 v7 runs tests in headless mode by default. With `headless: true` the action runs Godot without a virtual display, which is faster.
+Godot does not render anything in headless mode, so run tests that need rendered output, e.g. screenshots, shader output or visibility notifiers, in a separate job without it.
+```yaml
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: godot-gdunit-labs/gdUnit4-action@v1
+        with:
+          godot-version: '4.7'
+          paths: 'res://test/unit'
+          headless: true
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: godot-gdunit-labs/gdUnit4-action@v1
+        with:
+          godot-version: '4.7'
+          paths: 'res://test/e2e'
+```
+GdUnit4 v6 refuses to run in headless mode and ends with the exit code 103, add `arguments: '--ignoreHeadlessMode'` to run it anyway.
 
 ### Testing with Retries and Custom Arguments
 ```yaml
