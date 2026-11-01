@@ -24,13 +24,13 @@ runs:
       run: |
         echo ""
         echo -e "\e[34mRun Determine GdUnit4 Version\e[0m"
-        
+
         echo -e "\e[33mVersion Input: \e[0m ${{ inputs.version }}"
         echo -e "\e[33mProject Directory: \e[0m ${{ inputs.project_dir }}"
         echo ""
-        
+
         cd "${{ inputs.project_dir }}"
-        
+
         # Function to extract version from plugin.cfg
         extract_version_from_plugin() {
             local plugin_file=$1
@@ -47,14 +47,14 @@ runs:
             fi
             return 1
         }
-        
+
         # Determine GdUnit4 version based on input
         if [[ "${{ inputs.version }}" == "installed" ]]; then
             echo -e "\e[33mChecking installed GdUnit4 plugin version... \e[0m"
-            
+
             if [[ -f ./addons/gdUnit4/plugin.cfg ]]; then
                 gdunit_version=$(extract_version_from_plugin "./addons/gdUnit4/plugin.cfg")
-                
+
                 if [[ -n "${gdunit_version}" ]]; then
                     echo -e "\e[92m✓ Found installed GdUnit4 version: ${gdunit_version} \e[0m"
                     echo "version=${gdunit_version}" >> $GITHUB_OUTPUT
@@ -69,12 +69,12 @@ runs:
                 echo -e "\e[31m  Make sure the plugin is installed before using version='installed' \e[0m"
                 exit 1
             fi
-        
+
         elif [[ "${{ inputs.version }}" == "latest" ]]; then
             echo -e "\e[33mResolving 'latest' GdUnit4 version from GitHub... \e[0m"
-            
+
             gdunit_version=$(git ls-remote --refs --tags https://github.com/godot-gdunit-labs/gdUnit4 v* | sort -t '/' -k 3 -V | tail -n 1 | cut -d '/' -f 3)
-            
+
             if [[ -n "${gdunit_version}" ]]; then
                 echo -e "\e[92m✓ Resolved latest version: ${gdunit_version} \e[0m"
                 echo "version=${gdunit_version}" >> $GITHUB_OUTPUT
@@ -84,11 +84,11 @@ runs:
                 echo -e "\e[31m✗ Error: Could not resolve latest version from GitHub \e[0m"
                 exit 1
             fi
-        
+
         else
             # Custom branch/tag specified
             echo -e "\e[33mFetching GdUnit4 version from branch/tag '${{ inputs.version }}'... \e[0m"
-            
+
             # Check if it's a tag
             if git ls-remote --tags https://github.com/godot-gdunit-labs/gdUnit4 | grep -q "refs/tags/${{ inputs.version }}$"; then
                 echo -e "\e[92m✓ Tag '${{ inputs.version }}' found \e[0m"
@@ -103,14 +103,15 @@ runs:
                 git ls-remote --tags https://github.com/godot-gdunit-labs/gdUnit4 | grep -oP 'refs/tags/\K.*' | grep -v '\^{}' | sort -V | tail -n 10 >&2
                 exit 1
             fi
-            
+
             # Clone the specific branch to get the plugin.cfg
             CLONE_DIR="./.gdunit4-version-${{ inputs.version }}"
-            
-            if git clone --quiet --depth 1 --branch "${{ inputs.version }}" --single-branch https://github.com/godot-gdunit-labs/gdUnit4 "${CLONE_DIR}" 2>/dev/null; then
-                
+
+            if git clone --quiet --depth 1 --branch "${{ inputs.version }}" --single-branch \
+                https://github.com/godot-gdunit-labs/gdUnit4 "${CLONE_DIR}" 2>/dev/null; then
+
                 gdunit_version=$(extract_version_from_plugin "${CLONE_DIR}/addons/gdUnit4/plugin.cfg")
-                
+
                 if [[ -n "${gdunit_version}" ]]; then
                     echo -e "\e[92m✓ Found GdUnit4 version from branch '${{ inputs.version }}': ${gdunit_version}  \e[0m"
                     echo "version=${gdunit_version}" >> $GITHUB_OUTPUT

@@ -53,7 +53,7 @@ async function runTests(exeArgs, core) {
     const {
       project_dir = '',
       paths = "",
-      arguments = '',
+      arguments: testArguments = '',
       timeout = 10,
       retries = 0,
       warningsAsErrors = false,
@@ -69,12 +69,12 @@ async function runTests(exeArgs, core) {
       core.warning(`Use only the first entry of paths, ${pathsArray}!`);
     }
 
-    const {command, args} = buildTestCommand(pathsArray, arguments, headless);
+    const {command, args} = buildTestCommand(pathsArray, testArguments, headless);
 
     const working_dir = getProjectPath(project_dir);
     console_info(`Running GdUnit4 ${process.env.GDUNIT_VERSION} tests at ${working_dir} with: ${command} ${args.join(" ")}`);
     console_info(`project_dir: ${project_dir}`);
-    console_info(`arguments: ${arguments}`);
+    console_info(`arguments: ${testArguments}`);
     console_info(`timeout: ${timeout}m`);
     console_info(`retries: ${retries}`);
     console_info(`warningsAsErrors: ${warningsAsErrors}`);

@@ -1,7 +1,7 @@
 name: ci-master
 run-name: ci-${{ github.head_ref || github.ref_name }}
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - master
@@ -11,7 +11,7 @@ on:
       - '**.md'
 
   release:
-    types: [ published ]
+    types: [published]
 
   workflow_dispatch:
   schedule:
@@ -83,16 +83,16 @@ jobs:
         run: |
           echo "outcome: ${{ steps.version-check1.outcome }}"
           echo "exit_code: ${{ steps.version-check1.outputs.version_check_exit_code }}"
-          
+
           echo "The action must fail, uses incompatible GdUnit and Godot versions."
           echo "GdUnit4 'v6.0.0' requires minimum Godot version '4.5' but less version '4.5'."
-          
+
           if [[ '${{ steps.version-check1.outcome }}' != 'failure' ]]; then
             echo "Expected: failure"
             echo "Actual: ${{ steps.version-check1.outcome }}"
             exit 1
           fi
-          
+
           if [[ '${{ steps.version-check1.outputs.version_check_exit_code }}' != '78' ]]; then
             echo "ERROR: Expected exit code 78 for version incompatibility"
             echo "Actual: ${{ steps.version-check1.outputs.version_check_exit_code }}"
@@ -117,16 +117,16 @@ jobs:
         run: |
           echo "outcome: ${{ steps.version-check1.outcome }}"
           echo "exit_code: ${{ steps.version-check2.outputs.version_check_exit_code }}"
-          
+
           echo "The action must fail, uses incompatible GdUnit and Godot versions."
           echo "GdUnit4 'v5.1.1' requires minimum Godot version '4.3' but less version '4.5'."
-          
+
           if [[ '${{ steps.version-check2.outcome }}' != 'failure' ]]; then
             echo "Expected: failure"
             echo "Actual: ${{ steps.version-check2.outcome }}"
             exit 1
           fi
-          
+
           if [[ '${{ steps.version-check2.outputs.version_check_exit_code }}' != '78' ]]; then
             echo "ERROR: Expected exit code 78 for version incompatibility"
             echo "Actual: ${{ steps.version-check2.outputs.version_check_exit_code }}"
@@ -211,7 +211,7 @@ jobs:
         uses: ./
         with:
           godot-version: 4.5
-          godot-force-mono : 'true'
+          godot-force-mono: 'true'
           dotnet-version: 'net8.0'
           paths: |
             res://tests/
@@ -258,7 +258,7 @@ jobs:
         run: |
           echo "The step 'steps.test-fails' must fail but is ${{ steps.test-fails.outcome}}"
           exit 1
-  
+
 
   # tests do not build the report
   action-disable-report:
@@ -326,14 +326,14 @@ jobs:
           echo 'Verifying test results for warnings (should pass but with warning code)'
           echo 'Outcome: ${{ steps.test-id.outcome }}'
           echo 'Exit code: ${{ steps.test-id.outputs.exit_code }}'
-          
+
           if [[ '${{ steps.test-id.outcome }}' != 'success' ]]; then
             echo 'ERROR: Test with warnings should succeed'
             echo 'Expected outcome: success'
             echo 'Actual outcome: ${{ steps.test-id.outcome }}'
             exit 1
           fi
-          
+
           if [[ '${{ steps.test-id.outputs.exit_code }}' != '101' ]]; then
             echo 'ERROR: Test with warnings should return warning code'
             echo 'Expected exit code: 101 (WARNING)'
@@ -379,14 +379,14 @@ jobs:
           echo 'Verifying test results for warning treated as error (should fail)'
           echo 'Outcome: ${{ steps.test-id.outcome }}'
           echo 'Exit code: ${{ steps.test-id.outputs.exit_code }}'
-          
+
           if [[ '${{ steps.test-id.outcome }}' != 'failure' ]]; then
             echo 'ERROR: Test with warnings-as-errors should fail'
             echo 'Expected outcome: failure'
             echo 'Actual outcome: ${{ steps.test-id.outcome }}'
             exit 1
           fi
-          
+
           if [[ '${{ steps.test-id.outputs.exit_code }}' != '101' ]]; then
             echo 'ERROR: Test with warnings-as-errors should return warning code'
             echo 'Expected exit code: 101 (WARNING)'
