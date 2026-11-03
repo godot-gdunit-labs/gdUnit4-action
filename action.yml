@@ -126,6 +126,22 @@ runs:
           sanitize_single_line "$1" | sed 's/[^[:alnum:]._-]/-/g'
         }
 
+        append_github_env() {
+          local key="$1"
+          local value="$2"
+          local delimiter
+          if command -v uuidgen >/dev/null 2>&1; then
+            delimiter="EOF_$(uuidgen)"
+          else
+            delimiter="EOF_$(date +%s)_$RANDOM"
+          fi
+          {
+            printf '%s<<%s\n' "$key" "$delimiter"
+            printf '%s\n' "$value"
+            printf '%s\n' "$delimiter"
+          } >> "$GITHUB_ENV"
+        }
+
         SAFE_RUNNER_OS="$(sanitize_cache_component "${RUNNER_OS}")"
         SAFE_GODOT_VERSION="$(sanitize_cache_component "${ACTION_GODOT_VERSION}")"
         SAFE_GODOT_STATUS="$(sanitize_cache_component "${ACTION_GODOT_STATUS}")"
@@ -133,12 +149,13 @@ runs:
         SAFE_RUN_GDSCRIPT_TESTS="$(sanitize_single_line "${ACTION_RUN_GDSCRIPT_TESTS}")"
 
         if [[ "${ACTION_USE_NET}" == 'true' ]]; then
-            echo "CACHE_NAME=${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}-${SAFE_DOTNET_VERSION}" >> "$GITHUB_ENV"
+            CACHE_NAME_VALUE="${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}-${SAFE_DOTNET_VERSION}"
         else
-            echo "CACHE_NAME=${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}" >> "$GITHUB_ENV"
+            CACHE_NAME_VALUE="${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}"
         fi
 
-        echo "RUN_GDSCRIPT_TESTS=${SAFE_RUN_GDSCRIPT_TESTS}" >> "$GITHUB_ENV"
+        append_github_env "CACHE_NAME" "${CACHE_NAME_VALUE}"
+        append_github_env "RUN_GDSCRIPT_TESTS" "${SAFE_RUN_GDSCRIPT_TESTS}"
 
     - name: 'Build Cache'
       uses: actions/cache@v6
