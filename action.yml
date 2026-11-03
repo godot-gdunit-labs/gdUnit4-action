@@ -239,8 +239,13 @@ runs:
       env:
         ACTION_DOTNET_VERSION: ${{ inputs.dotnet-version }}
       run: |
-        sdk_version=$(echo "${ACTION_DOTNET_VERSION}" | sed 's/^net\([0-9][0-9]*\.[0-9][0-9]*\)$/\1.x/')
-        echo "SDK_VERSION=$sdk_version" >> "$GITHUB_ENV"
+        dotnet_version="${ACTION_DOTNET_VERSION}"
+        if [[ ! "$dotnet_version" =~ ^net([0-9]+)\.([0-9]+)$ ]]; then
+          echo "Invalid dotnet-version input: '$dotnet_version'. Expected format: net<major>.<minor> (e.g. net8.0)." >&2
+          exit 1
+        fi
+        sdk_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.x"
+        printf 'SDK_VERSION=%s\n' "$sdk_version" >> "$GITHUB_ENV"
         echo "Using .NET version: '$sdk_version'"
 
     - name: 'Setup .NET SDK'
