@@ -118,13 +118,27 @@ runs:
         ACTION_GODOT_STATUS: ${{ inputs.godot-status }}
         ACTION_DOTNET_VERSION: ${{ inputs.dotnet-version }}
       run: |
+        sanitize_single_line() {
+          printf '%s' "$1" | tr -d '\r\n'
+        }
+
+        sanitize_cache_component() {
+          sanitize_single_line "$1" | sed 's/[^[:alnum:]._-]/-/g'
+        }
+
+        SAFE_RUNNER_OS="$(sanitize_cache_component "${RUNNER_OS}")"
+        SAFE_GODOT_VERSION="$(sanitize_cache_component "${ACTION_GODOT_VERSION}")"
+        SAFE_GODOT_STATUS="$(sanitize_cache_component "${ACTION_GODOT_STATUS}")"
+        SAFE_DOTNET_VERSION="$(sanitize_cache_component "${ACTION_DOTNET_VERSION}")"
+        SAFE_RUN_GDSCRIPT_TESTS="$(sanitize_single_line "${ACTION_RUN_GDSCRIPT_TESTS}")"
+
         if [[ "${ACTION_USE_NET}" == 'true' ]]; then
-            echo "CACHE_NAME=${RUNNER_OS}-Godot_v${ACTION_GODOT_VERSION}-${ACTION_GODOT_STATUS}-${ACTION_DOTNET_VERSION}" >> "$GITHUB_ENV"
+            echo "CACHE_NAME=${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}-${SAFE_DOTNET_VERSION}" >> "$GITHUB_ENV"
         else
-            echo "CACHE_NAME=${RUNNER_OS}-Godot_v${ACTION_GODOT_VERSION}-${ACTION_GODOT_STATUS}" >> "$GITHUB_ENV"
+            echo "CACHE_NAME=${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}" >> "$GITHUB_ENV"
         fi
 
-        echo "RUN_GDSCRIPT_TESTS=${ACTION_RUN_GDSCRIPT_TESTS}" >> "$GITHUB_ENV"
+        echo "RUN_GDSCRIPT_TESTS=${SAFE_RUN_GDSCRIPT_TESTS}" >> "$GITHUB_ENV"
 
     - name: 'Build Cache'
       uses: actions/cache@v6
