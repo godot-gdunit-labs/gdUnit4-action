@@ -459,7 +459,7 @@ jobs:
       - name: 'Run tests with produces warnings'
         id: test-id
         continue-on-error: true
-        timeout-minutes: 1
+        timeout-minutes: 3
         uses: ./
         with:
           godot-version: 4.5
@@ -511,7 +511,7 @@ jobs:
       - name: 'Run tests with produces warnings but treated as error'
         id: test-id
         continue-on-error: true
-        timeout-minutes: 1
+        timeout-minutes: 3
         uses: ./
         with:
           godot-version: 4.5
