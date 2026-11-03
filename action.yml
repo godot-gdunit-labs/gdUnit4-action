@@ -111,14 +111,51 @@ runs:
 
     - name: 'Set Cache Name'
       shell: bash
+      env:
+        ACTION_USE_NET: ${{ inputs.godot-net == 'true' || inputs.godot-force-mono == 'true' }}
+        ACTION_RUN_GDSCRIPT_TESTS: ${{ inputs.godot-net == 'false' }}
+        ACTION_GODOT_VERSION: ${{ inputs.godot-version }}
+        ACTION_GODOT_STATUS: ${{ inputs.godot-status }}
+        ACTION_DOTNET_VERSION: ${{ inputs.dotnet-version }}
       run: |
-        if ${{inputs.godot-net == 'true' || inputs.godot-force-mono == 'true'}}; then
-            echo "CACHE_NAME=${{ runner.OS }}-Godot_v${{ inputs.godot-version }}-${{ inputs.godot-status }}-${{ inputs.dotnet-version }}" >> "$GITHUB_ENV"
+        sanitize_single_line() {
+          printf '%s' "$1" | tr -d '\r\n'
+        }
+
+        sanitize_cache_component() {
+          sanitize_single_line "$1" | sed 's/[^[:alnum:]._-]/-/g'
+        }
+
+        append_github_env() {
+          local key="$1"
+          local value="$2"
+          local delimiter
+          if command -v uuidgen >/dev/null 2>&1; then
+            delimiter="EOF_$(uuidgen)"
+          else
+            delimiter="EOF_$(date +%s)_$RANDOM"
+          fi
+          {
+            printf '%s<<%s\n' "$key" "$delimiter"
+            printf '%s\n' "$value"
+            printf '%s\n' "$delimiter"
+          } >> "$GITHUB_ENV"
+        }
+
+        SAFE_RUNNER_OS="$(sanitize_cache_component "${RUNNER_OS}")"
+        SAFE_GODOT_VERSION="$(sanitize_cache_component "${ACTION_GODOT_VERSION}")"
+        SAFE_GODOT_STATUS="$(sanitize_cache_component "${ACTION_GODOT_STATUS}")"
+        SAFE_DOTNET_VERSION="$(sanitize_cache_component "${ACTION_DOTNET_VERSION}")"
+        SAFE_RUN_GDSCRIPT_TESTS="$(sanitize_single_line "${ACTION_RUN_GDSCRIPT_TESTS}")"
+
+        if [[ "${ACTION_USE_NET}" == 'true' ]]; then
+            CACHE_NAME_VALUE="${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}-${SAFE_DOTNET_VERSION}"
         else
-            echo "CACHE_NAME=${{ runner.OS }}-Godot_v${{ inputs.godot-version }}-${{ inputs.godot-status }}" >> "$GITHUB_ENV"
+            CACHE_NAME_VALUE="${SAFE_RUNNER_OS}-Godot_v${SAFE_GODOT_VERSION}-${SAFE_GODOT_STATUS}"
         fi
 
-        echo "RUN_GDSCRIPT_TESTS=${{inputs.godot-net == 'false'}}" >> "$GITHUB_ENV"
+        append_github_env "CACHE_NAME" "${CACHE_NAME_VALUE}"
+        append_github_env "RUN_GDSCRIPT_TESTS" "${SAFE_RUN_GDSCRIPT_TESTS}"
 
     - name: 'Build Cache'
       uses: actions/cache@v6
@@ -147,27 +184,31 @@ runs:
       # We only install the plugin if required, for c# test is not need to install the plugin
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && env.RUN_GDSCRIPT_TESTS == 'true' }}
       shell: bash
+      env:
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+        ACTION_VERSION: ${{ inputs.version }}
+        ACTION_USE_INSTALLED: ${{ inputs.version == 'installed' }}
       run: |
 
-        echo -e "\e[33m Change to project directory: ${{ inputs.project_dir }} \e[0m"
-        cd "${{ inputs.project_dir }}"
+        echo -e "\e[33m Change to project directory: ${ACTION_PROJECT_DIR} \e[0m"
+        cd "${ACTION_PROJECT_DIR}"
 
-        if ${{ inputs.version == 'installed' }}; then
-          echo -e "\e[33m Info: Using the installed GdUnit4 plugin version ${{ env.GDUNIT_VERSION }}. \e[0m"
+        if [[ "${ACTION_USE_INSTALLED}" == 'true' ]]; then
+          echo -e "\e[33m Info: Using the installed GdUnit4 plugin version ${GDUNIT_VERSION}. \e[0m"
           chmod +x ./addons/gdUnit4/runtest.sh
           exit 0
         fi
 
         # Prepare install
-        CLONE_DIR="./.gdunit4-version-${{ inputs.version }}"
+        CLONE_DIR="./.gdunit4-version-${ACTION_VERSION}"
         if [[ -d "${CLONE_DIR}" ]]; then
           mv "${CLONE_DIR}" ./.install-gdunit4
         else
-          git clone --quiet --depth 1 --branch ${{ env.GDUNIT_VERSION }} --single-branch https://github.com/godot-gdunit-labs/gdUnit4 ./.install-gdunit4
+          git clone --quiet --depth 1 --branch "${GDUNIT_VERSION}" --single-branch https://github.com/godot-gdunit-labs/gdUnit4 ./.install-gdunit4
         fi
 
         # Remove test if no self test requested
-        if [[ -d ./.install-gdunit4/addons/gdUnit4/test && ! "${{ env.GDUNIT_SELFTEST }}" ]]; then
+        if [[ -d ./.install-gdunit4/addons/gdUnit4/test && ! "${GDUNIT_SELFTEST:-}" ]]; then
           echo "Delete 'addons/gdUnit4/test'"
           rm -rf ./.install-gdunit4/addons/gdUnit4/test
         fi
@@ -179,7 +220,7 @@ runs:
         fi
 
         # Install requested gdUnit4 version into current project
-        echo -e "\e[34m Install GdUnit4 \e[92m${{ env.GDUNIT_VERSION }} \e[34m plugin in the project \e[0m"
+        echo -e "\e[34m Install GdUnit4 \e[92m${GDUNIT_VERSION} \e[34m plugin in the project \e[0m"
         mkdir -p ./addons/gdUnit4/
         cp -R ./.install-gdunit4/addons/gdUnit4 ./addons
         chmod +x ./addons/gdUnit4/runtest.sh
@@ -195,8 +236,10 @@ runs:
     - name: 'Set .NET SDK version'
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && (inputs.godot-net == 'true' || inputs.godot-force-mono == 'true') }}
       shell: bash
+      env:
+        ACTION_DOTNET_VERSION: ${{ inputs.dotnet-version }}
       run: |
-        sdk_version=$(echo "${{ inputs.dotnet-version }}" | sed 's/^net\([0-9][0-9]*\.[0-9][0-9]*\)$/\1.x/')
+        sdk_version=$(echo "${ACTION_DOTNET_VERSION}" | sed 's/^net\([0-9][0-9]*\.[0-9][0-9]*\)$/\1.x/')
         echo "SDK_VERSION=$sdk_version" >> "$GITHUB_ENV"
         echo "Using .NET version: '$sdk_version'"
 
@@ -209,11 +252,14 @@ runs:
     - name: 'Restore .Net Project'
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && (inputs.godot-net == 'true' || inputs.godot-force-mono == 'true') }}
       shell: bash
+      env:
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+        ACTION_VERSION: ${{ inputs.version }}
       run: |
-        cd "${{ inputs.project_dir }}"
+        cd "${ACTION_PROJECT_DIR}"
 
         # for gdunit version less than 4.2.2 we need to load api version 4.2.1.1
-        gdUnitVersion=$(echo "${{ inputs.version }}" | sed 's/^v//; s/\.//g')
+        gdUnitVersion=$(echo "${ACTION_VERSION}" | sed 's/^v//; s/\.//g')
         if [[ ${gdUnitVersion} < 422 ]]; then
           # install required packages
           echo "gdUnit4 version ${gdUnitVersion} less 4.2.2, update project to gdUnit4.api v4.2.1"
@@ -229,9 +275,10 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() }}
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
       shell: bash
       run: |
-        cd "${{ inputs.project_dir }}"
+        cd "${ACTION_PROJECT_DIR}"
         echo -e "\e[94mStart of the recovery of the project cache ...\e[0m"
         $GODOT_BIN --path ./ -e --headless --quit-after 2000
         echo -e "\e[94mProject cache successfully restored.\e[0m"
@@ -242,18 +289,26 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && env.RUN_GDSCRIPT_TESTS == 'true'}}
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+        ACTION_PATHS: ${{ inputs.paths }}
+        ACTION_ARGUMENTS: ${{ inputs.arguments }}
+        ACTION_TIMEOUT: ${{ inputs.timeout }}
+        ACTION_RETRIES: ${{ inputs.retries }}
+        ACTION_WARNINGS_AS_ERRORS: ${{ inputs.warnings-as-errors == 'true' }}
+        ACTION_HEADLESS: ${{ inputs.headless == 'true' }}
       uses: actions/github-script@v9
       with:
         script: |
           const { runTests } = require('./.gdunit4_action/unit-test/index.js')
+          const env = process.env;
           const args = {
-            project_dir: `${{ inputs.project_dir }}`,
-            paths: `${{ inputs.paths }}`,
-            arguments: `${{ inputs.arguments }}`,
-            timeout: ${{ inputs.timeout }},
-            retries: ${{ inputs.retries }},
-            warningsAsErrors : ${{ inputs.warnings-as-errors }},
-            headless: ${{ inputs.headless == 'true' }}
+            project_dir: env.ACTION_PROJECT_DIR,
+            paths: env.ACTION_PATHS,
+            arguments: env.ACTION_ARGUMENTS,
+            timeout: Number(env.ACTION_TIMEOUT),
+            retries: Number(env.ACTION_RETRIES),
+            warningsAsErrors : env.ACTION_WARNINGS_AS_ERRORS === 'true',
+            headless: env.ACTION_HEADLESS === 'true'
           };
           const exitCode =  await runTests(args, core);
           core.setOutput('exit_code', exitCode);
@@ -271,9 +326,13 @@ runs:
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() && env.RUN_GDSCRIPT_TESTS == 'false' }}
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+        ACTION_HEADLESS: ${{ inputs.headless == 'true' }}
+        ACTION_CONSOLE_VERBOSITY: ${{ inputs.console-verbosity }}
+        ACTION_ARGUMENTS: ${{ inputs.arguments }}
       shell: bash
       run: |
-        cd "${{ inputs.project_dir }}"
+        cd "${ACTION_PROJECT_DIR}"
         # test if a .runsettings file exists, if not use the action provided default .runsettings
         if [ -f .runsettings ]; then
           echo "Found '.runsettings' file."
@@ -281,14 +340,14 @@ runs:
           echo "No project specific '.runsettings' found, using action default '.runsettings'"
           cp $GITHUB_ACTION_PATH/.gdunit4_action/.runsettings .
         fi
-        if ${{ inputs.headless == 'true' }}; then
+        if [[ "${ACTION_HEADLESS}" == 'true' ]]; then
           dotnet test --no-build --settings .runsettings --results-directory ./reports \
-            --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" \
-            -- GdUnit4.Parameters="--headless --audio-driver Dummy ${{ inputs.arguments }}"
+            --logger "console;verbosity=${ACTION_CONSOLE_VERBOSITY}" --logger "trx;LogFileName=results.xml" \
+            -- GdUnit4.Parameters="--headless --audio-driver Dummy ${ACTION_ARGUMENTS}"
         else
           xvfb-run --auto-servernum dotnet test --no-build --settings .runsettings --results-directory ./reports \
-            --logger "console;verbosity=${{ inputs.console-verbosity }}" --logger "trx;LogFileName=results.xml" \
-            -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${{ inputs.arguments }}"
+            --logger "console;verbosity=${ACTION_CONSOLE_VERBOSITY}" --logger "trx;LogFileName=results.xml" \
+            -- GdUnit4.Parameters="--audio-driver Dummy --display-driver x11 --rendering-driver opengl3 --screen 0 ${ACTION_ARGUMENTS}"
         fi
 
     - name: 'Publish .Net Unit Test Reports'
