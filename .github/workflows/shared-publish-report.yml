@@ -47,7 +47,7 @@ jobs:
 
       - name: 'Publish Test Results'
         if: ${{ matrix.dotnet-version == '' }}
-        uses: dorny/test-reporter@v3
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}
           path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/**/results.xml'
@@ -58,7 +58,7 @@ jobs:
 
       - name: 'Publish Test Adapter Results'
         if: ${{ matrix.dotnet-version != '' }}
-        uses: dorny/test-reporter@v3
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         with:
           name: report_gdUnit4_${{ matrix.gdunit-version }}-Godot${{ matrix.godot-version }}-${{ matrix.dotnet-version }}
           path: './home/runner/work/gdUnit4-action/gdUnit4-action/reports/*.xml'

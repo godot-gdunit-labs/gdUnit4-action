@@ -20,12 +20,12 @@ runs:
     - name: 'Check Compatibility'
       id: check-compatibility
       shell: bash
+      env:
+        GODOT_VERSION: ${{ inputs.godot-version }}
+        GDUNIT_VERSION: ${{ inputs.gdunit-version }}
       run: |
         echo ""
         echo -e "\e[34mRun Version Compatibility Check\e[0m"
-
-        GODOT_VERSION="${{ inputs.godot-version }}"
-        GDUNIT_VERSION="${{ inputs.gdunit-version }}"
 
         echo -e "\e[33mConfigured Godot Version:\e[0m ${GODOT_VERSION}"
         echo -e "\e[33mConfigured GdUnit4 Version:\e[0m ${GDUNIT_VERSION}"

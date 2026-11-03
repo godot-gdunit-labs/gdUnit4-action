@@ -25,43 +25,49 @@ runs:
       if: steps.godot-cache-binary.outputs.cache-hit != 'true'
       continue-on-error: false
       shell: bash
+      env:
+        ACTION_GODOT_VERSION: ${{ inputs.godot-version }}
+        ACTION_GODOT_STATUS_VERSION: ${{ inputs.godot-status-version }}
+        ACTION_GODOT_NET: ${{ inputs.godot-net == 'true' }}
+        ACTION_IS_LINUX: ${{ runner.OS == 'Linux' }}
+        ACTION_INSTALL_PATH: ${{ inputs.install-path }}
       run: |
-        mkdir -p ${{ inputs.install-path }}
-        chmod 770 ${{ inputs.install-path }}
+        mkdir -p "${ACTION_INSTALL_PATH}"
+        chmod 770 "${ACTION_INSTALL_PATH}"
         DIR="$HOME/.config/godot"
         if [ ! -d "$DIR" ]; then
           mkdir -p "$DIR"
           chmod 770 "$DIR"
         fi
 
-        DOWNLOAD_URL=https://github.com/godotengine/godot-builds/releases/download/${{ inputs.godot-version }}-${{ inputs.godot-status-version }}
-        GODOT_BIN=Godot_v${{ inputs.godot-version }}-${{ inputs.godot-status-version }}_linux.x86_64
-        if ${{inputs.godot-net == 'true'}}; then
-          GODOT_BIN=Godot_v${{ inputs.godot-version }}-${{ inputs.godot-status-version }}_mono_linux_x86_64
+        DOWNLOAD_URL=https://github.com/godotengine/godot-builds/releases/download/${ACTION_GODOT_VERSION}-${ACTION_GODOT_STATUS_VERSION}
+        GODOT_BIN=Godot_v${ACTION_GODOT_VERSION}-${ACTION_GODOT_STATUS_VERSION}_linux.x86_64
+        if [[ "${ACTION_GODOT_NET}" == 'true' ]]; then
+          GODOT_BIN=Godot_v${ACTION_GODOT_VERSION}-${ACTION_GODOT_STATUS_VERSION}_mono_linux_x86_64
         fi
 
         GODOT_PACKAGE=$GODOT_BIN.zip
         echo "Download URL: $DOWNLOAD_URL/$GODOT_PACKAGE"
-        wget --progress=bar:force:noscroll $DOWNLOAD_URL/$GODOT_PACKAGE -P ${{ inputs.install-path }}
-        unzip ${{ inputs.install-path }}/$GODOT_PACKAGE -d ${{ inputs.install-path }}
-        rm -rf ${{ inputs.install-path }}/$GODOT_PACKAGE
+        wget --progress=bar:force:noscroll $DOWNLOAD_URL/$GODOT_PACKAGE -P "${ACTION_INSTALL_PATH}"
+        unzip "${ACTION_INSTALL_PATH}"/$GODOT_PACKAGE -d "${ACTION_INSTALL_PATH}"
+        rm -rf "${ACTION_INSTALL_PATH}"/$GODOT_PACKAGE
 
-        if ${{runner.OS == 'Linux'}}; then
+        if [[ "${ACTION_IS_LINUX}" == 'true' ]]; then
           echo "Run linux part"
 
-          if ${{inputs.godot-net == 'true'}}; then
-            mv ${{ inputs.install-path }}/$GODOT_BIN/* ${{ inputs.install-path }}
-            rmdir ${{ inputs.install-path }}/$GODOT_BIN/
+          if [[ "${ACTION_GODOT_NET}" == 'true' ]]; then
+            mv "${ACTION_INSTALL_PATH}"/$GODOT_BIN/* "${ACTION_INSTALL_PATH}"
+            rmdir "${ACTION_INSTALL_PATH}"/$GODOT_BIN/
           fi
 
-          mv ${{ inputs.install-path }}/Godot_v* ${{ inputs.install-path }}/godot
-          chmod u+x ${{ inputs.install-path }}/godot
-          echo "${{ inputs.install-path }}/godot"
+          mv "${ACTION_INSTALL_PATH}"/Godot_v* "${ACTION_INSTALL_PATH}"/godot
+          chmod u+x "${ACTION_INSTALL_PATH}"/godot
+          echo "${ACTION_INSTALL_PATH}/godot"
         else
           echo "Run windows part"
           pwd
-          mv ${{ inputs.install-path }}/$GODOT_BIN ${{ inputs.install-path }}/godot.exe
-          chmod u+x ${{ inputs.install-path }}/godot.exe
-          ${{ inputs.install-path }}/godot.exe --version
-          echo "${{ inputs.install-path }}/godot.exe"
+          mv "${ACTION_INSTALL_PATH}"/$GODOT_BIN "${ACTION_INSTALL_PATH}"/godot.exe
+          chmod u+x "${ACTION_INSTALL_PATH}"/godot.exe
+          "${ACTION_INSTALL_PATH}"/godot.exe --version
+          echo "${ACTION_INSTALL_PATH}/godot.exe"
         fi

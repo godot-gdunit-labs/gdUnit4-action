@@ -21,6 +21,10 @@ on:  # yamllint disable-line rule:truthy
         default: true
         type: boolean
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
