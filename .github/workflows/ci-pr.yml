@@ -23,21 +23,7 @@ concurrency:
 
 jobs:
 
-  unit-tests-v5x:
-    uses: ./.github/workflows/shared-unit-tests.yml
-    with:
-      versions: '["v5.1.1"]'
-      godot-versions: '["4.3", "4.4", "4.4.1"]'
-      dotnet-versions: '["", "net8.0"]'
-
-  unit-tests-v61:
-    uses: ./.github/workflows/shared-unit-tests.yml
-    with:
-      versions: '["v6.0.0"]'
-      godot-versions: '["4.5", "4.5.1"]'
-      dotnet-versions: '["", "net8.0", "net9.0"]'
-
-  unit-tests-v62:
+  unit-tests-v6x:
     uses: ./.github/workflows/shared-unit-tests.yml
     with:
       versions: '["v6.1.0", "latest"]'
@@ -552,9 +538,7 @@ jobs:
       - js-tests
       - action-headless
       - compatibility-check
-      - unit-tests-v5x
-      - unit-tests-v61
-      - unit-tests-v62
+      - unit-tests-v6x
       - unit-tests-installed-version
       - unit-tests-custom-working-directory
       - unit-tests-force-godot-mono
