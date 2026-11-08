@@ -276,7 +276,6 @@ runs:
         # Only restore here, the project is built by Godot in the next step with the installed
         # Godot version, so the test assembly uses the Godot.NET.Sdk of the selected `godot-version`.
         dotnet restore
-        dotnet list package
 
     - name: 'Restore Godot project cache'
       if: ${{ steps.version_check.outcome == 'success' && !cancelled() }}
@@ -297,6 +296,8 @@ runs:
         $GODOT_BIN --path ./ -e --headless "${build_args[@]}" --quit-after 2000
         if [[ "${ACTION_BUILD_SOLUTIONS}" == 'true' ]]; then
           echo -e "\e[94mC# project built with SDK: $(grep -ho 'Godot.NET.Sdk/[^"]*' ./*.csproj 2>/dev/null || echo 'unknown')\e[0m"
+          # List the packages after the build, the Godot editor has upgraded the project to the installed Godot version
+          dotnet list package
         fi
         echo -e "\e[94mProject cache successfully restored.\e[0m"
 
