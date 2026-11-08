@@ -273,7 +273,9 @@ runs:
         fi
 
         dotnet --version
-        dotnet build
+        # Only restore here, the project is built by Godot in the next step with the installed
+        # Godot version, so the test assembly uses the Godot.NET.Sdk of the selected `godot-version`.
+        dotnet restore
         dotnet list package
 
     - name: 'Restore Godot project cache'
@@ -281,11 +283,21 @@ runs:
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
         ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+        ACTION_BUILD_SOLUTIONS: ${{ inputs.godot-net == 'true' || inputs.godot-force-mono == 'true' }}
       shell: bash
       run: |
         cd "${ACTION_PROJECT_DIR}"
+        build_args=()
+        if [[ "${ACTION_BUILD_SOLUTIONS}" == 'true' ]]; then
+          # Build the C# solution with the installed Godot version, `dotnet test --no-build` uses this build output
+          echo -e "\e[94mBuild C# solutions with Godot $($GODOT_BIN --version) ...\e[0m"
+          build_args=(--build-solutions)
+        fi
         echo -e "\e[94mStart of the recovery of the project cache ...\e[0m"
-        $GODOT_BIN --path ./ -e --headless --quit-after 2000
+        $GODOT_BIN --path ./ -e --headless "${build_args[@]}" --quit-after 2000
+        if [[ "${ACTION_BUILD_SOLUTIONS}" == 'true' ]]; then
+          echo -e "\e[94mC# project built with SDK: $(grep -ho 'Godot.NET.Sdk/[^"]*' ./*.csproj 2>/dev/null || echo 'unknown')\e[0m"
+        fi
         echo -e "\e[94mProject cache successfully restored.\e[0m"
 
     ## GDScript test run
