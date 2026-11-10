@@ -34,7 +34,7 @@ jobs:
     uses: ./.github/workflows/shared-unit-tests.yml
     with:
       versions: '["v6.1.0", "latest"]'
-      godot-versions: '["4.5.1", "4.6.2"]'
+      godot-versions: '["4.5.2", "4.6.3", "4.7.2"]'
       dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
 
 
@@ -57,7 +57,7 @@ jobs:
         timeout-minutes: 1
         uses: ./
         with:
-          godot-version: 4.4
+          godot-version: 4.4.1
           version: 'v6.0.0'
           paths: |
             res://tests/
@@ -91,7 +91,7 @@ jobs:
         timeout-minutes: 1
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           version: 'v5.1.1'
           paths: |
             res://tests/
@@ -145,7 +145,7 @@ jobs:
         timeout-minutes: 5
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           project_dir: './custom_workpath/'
           paths: |
             res://tests/
@@ -157,7 +157,7 @@ jobs:
         timeout-minutes: 5
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           godot-net: true
           version: 'installed'
           project_dir: './custom_workpath/'
@@ -196,7 +196,7 @@ jobs:
         timeout-minutes: 5
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           godot-force-mono: 'true'
           dotnet-version: 'net8.0'
           paths: |
@@ -232,7 +232,7 @@ jobs:
           GDUNIT_FAIL: 'true'
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           paths: |
             res://tests/
           timeout: 2
@@ -269,7 +269,7 @@ jobs:
         timeout-minutes: 3
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           paths: |
             res://tests/
           publish-report: false
@@ -301,7 +301,7 @@ jobs:
         timeout-minutes: 3
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           paths: 'res://tests/tests_with_warnings_test.gd'
           publish-report: false
           report-name: action_ends-with-warnings
@@ -353,7 +353,7 @@ jobs:
         timeout-minutes: 3
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: 4.5.2
           warnings-as-errors: true
           paths: 'res://tests/tests_with_warnings_test.gd'
           publish-report: false
