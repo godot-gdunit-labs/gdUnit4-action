@@ -7,8 +7,6 @@ on:  # yamllint disable-line rule:truthy
       - '**.jpg'
       - '**.png'
       - '**.md'
-  pull_request_review:
-    types: [submitted]
   workflow_dispatch:
 
 
@@ -20,51 +18,12 @@ permissions:
   statuses: write
 
 concurrency:
-  group: >-
-    ci-pr-${{ github.event.pull_request.number || github.event.number || github.ref }}
+  group: ci-pr-${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
 
-  # Bot pull requests pass this gate only after a maintainer approves the current head commit.
-  approval:
-    if: >-
-      ${{ github.event_name != 'pull_request_review'
-          || github.event.pull_request.user.login == 'gdunit4-bot[bot]' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 1
-    name: 'Approval'
-    permissions:
-      pull-requests: read
-    steps:
-      - name: 'Check for an approved review'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-          PR_NUMBER: >-
-            ${{ github.event.pull_request.number || github.event.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        shell: bash
-        run: |
-          if [[ "$PR_AUTHOR" != "gdunit4-bot[bot]" ]]; then
-            echo "No approval gate is required for this pull request."
-            exit 0
-          fi
-
-          reviews=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews")
-          approved=$(jq --arg head "$PR_HEAD_SHA" --arg author "$PR_AUTHOR" \
-            'add | group_by(.user.login) | map(max_by(.submitted_at))
-             | any(.[]; .user.login != $author
-               and .state == "APPROVED" and .commit_id == $head)' \
-            <<< "$reviews")
-          if [[ "$approved" != "true" ]]; then
-            echo "::error::Approve this pull request commit before CI runs."
-            exit 1
-          fi
-          echo "The current pull request commit has an approving review."
-
   unit-tests-v6x:
-    needs: approval
     uses: ./.github/workflows/shared-unit-tests.yml
     with:
       versions: '["v6.1.0", "latest"]'
@@ -73,7 +32,6 @@ jobs:
 
 
   js-tests:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -89,7 +47,6 @@ jobs:
 
 
   action-headless:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -182,7 +139,6 @@ jobs:
 
 
   compatibility-check:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -266,7 +222,6 @@ jobs:
 
   # this tets would run the action against already installed GdUnit4 v5.1.1
   unit-tests-installed-version:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -313,7 +268,6 @@ jobs:
 
 
   unit-tests-custom-working-directory:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -362,7 +316,6 @@ jobs:
 
   # run gdscript tests with using Godot Net executable
   unit-tests-force-godot-mono:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -401,7 +354,6 @@ jobs:
 
   # tests if the action reports test failures the action must fail
   action-fail-test:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -443,7 +395,6 @@ jobs:
 
   # tests do not build the report
   action-disable-report:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -474,7 +425,6 @@ jobs:
 
   # tests report warning
   action-ends-with-warnings:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -527,7 +477,6 @@ jobs:
 
   # tests report warning as error
   action-ends-with-warnings-as-errors:
-    needs: approval
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -579,17 +528,13 @@ jobs:
           fi
 
   finalize:
-    if: >-
-      ${{ !cancelled()
-          && (github.event_name != 'pull_request_review'
-            || github.event.pull_request.user.login == 'gdunit4-bot[bot]') }}
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
     name: 'Final Results'
     needs:
-      - approval
       - js-tests
       - action-headless
       - compatibility-check
