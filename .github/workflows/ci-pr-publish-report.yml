@@ -18,10 +18,62 @@ permissions:
 
 jobs:
 
-  publish-reports-v6x:
-    uses: ./.github/workflows/shared-publish-report.yml
-    with:
-      versions: '["v6.1.0", "latest"]'
-      godot-versions: '["4.5.1", "4.6.2"]'
-      dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
-      workflow-run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
+  find-reports:
+    name: 'Find Test Reports'
+    runs-on: ubuntu-24.04
+    outputs:
+      reports: ${{ steps.find.outputs.reports }}
+    steps:
+      - name: 'Collect the test reports of the run'
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
+        run: |
+          reports=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" \
+            --jq '.artifacts[] | select(.expired | not) | .name' \
+            | jq --raw-input --null-input --compact-output '[inputs
+              | capture("^artifact_gdUnit4_(?<version>v[0-9.]+|latest)_Godot(?<godot>[0-9][0-9.]*)(?<dotnet>net[0-9.]+)?$")
+              | {
+                  artifact: "artifact_gdUnit4_\(.version)_Godot\(.godot)\(.dotnet // "")",
+                  name: "report_gdUnit4_\(.version)-Godot\(.godot)\(if .dotnet then "-\(.dotnet)" else "" end)",
+                  reporter: (if .dotnet then "dotnet-trx" else "java-junit" end),
+                  path: (if .dotnet then "reports/*.xml" else "reports/**/results.xml" end)
+                }] | unique_by(.artifact)')
+          echo "Found reports: $reports"
+          echo "reports=$reports" >> "$GITHUB_OUTPUT"
+
+  publish-reports:
+    needs: find-reports
+    if: ${{ needs.find-reports.outputs.reports != '[]' }}
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.report.name }}
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        report: ${{ fromJSON(needs.find-reports.outputs.reports) }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github
+
+      - name: 'Download artifacts'
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.report.artifact }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.inputs.workflow_run_id || github.event.workflow_run.id }}
+
+      - name: 'Publish Test Results'
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
+        with:
+          name: ${{ matrix.report.name }}
+          path: ./home/runner/work/gdUnit4-action/gdUnit4-action/${{ matrix.report.path }}
+          reporter: ${{ matrix.report.reporter }}
+          fail-on-error: 'false'
+          fail-on-empty: 'false'
+          use-actions-summary: 'false'
