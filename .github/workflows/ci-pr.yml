@@ -27,7 +27,7 @@ jobs:
     uses: ./.github/workflows/shared-unit-tests.yml
     with:
       versions: '["v6.1.0", "latest"]'
-      godot-versions: '["4.5.1", "4.6.2"]'
+      godot-versions: '["4.5.2", "4.6.3", "4.7.2"]'
       dotnet-versions: '["", "net8.0", "net9.0", "net10.0"]'
 
 
