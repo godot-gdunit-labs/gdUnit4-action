@@ -273,8 +273,8 @@ runs:
         fi
 
         dotnet --version
-        # Only restore here, the project is built by Godot in the next step with the installed
-        # Godot version, so the test assembly uses the Godot.NET.Sdk of the selected `godot-version`.
+        # Only restore here, the project is built after the Godot editor has upgraded the C# project
+        # to the installed Godot version, so the test assembly uses the Godot.NET.Sdk of the selected `godot-version`.
         dotnet restore
 
     - name: 'Restore Godot project cache'
@@ -282,24 +282,44 @@ runs:
       env:
         GODOT_BIN: '/home/runner/godot-linux/godot'
         ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
-        ACTION_BUILD_SOLUTIONS: ${{ inputs.godot-net == 'true' || inputs.godot-force-mono == 'true' }}
       shell: bash
       run: |
         cd "${ACTION_PROJECT_DIR}"
-        build_args=()
-        if [[ "${ACTION_BUILD_SOLUTIONS}" == 'true' ]]; then
-          # Build the C# solution with the installed Godot version, `dotnet test --no-build` uses this build output
-          echo -e "\e[94mBuild C# solutions with Godot $($GODOT_BIN --version) ...\e[0m"
-          build_args=(--build-solutions)
+        # The `project_dir` can also be the root of a .NET solution that holds the Godot project in a sub folder,
+        # in that case the Godot projects are searched below the `project_dir`.
+        if [[ -f ./project.godot ]]; then
+          godot_projects=(./)
+        else
+          mapfile -t godot_projects < <(find . -mindepth 2 -maxdepth 4 -name project.godot \
+            -not -path './.*' -not -path '*/addons/*' -not -path '*/.godot/*' -not -path '*/bin/*' -not -path '*/obj/*' \
+            -printf '%h/\n' | sort)
+          if (( ${#godot_projects[@]} == 0 )); then
+            echo "::warning::No 'project.godot' found in '${ACTION_PROJECT_DIR}' or its sub folders, skipping the recovery of the project cache."
+          else
+            echo "::notice::No 'project.godot' found in '${ACTION_PROJECT_DIR}', using the Godot project(s) found in the sub folders: ${godot_projects[*]}"
+          fi
         fi
-        echo -e "\e[94mStart of the recovery of the project cache ...\e[0m"
-        $GODOT_BIN --path ./ -e --headless "${build_args[@]}" --quit-after 2000
-        if [[ "${ACTION_BUILD_SOLUTIONS}" == 'true' ]]; then
-          echo -e "\e[94mC# project built with SDK: $(grep -ho 'Godot.NET.Sdk/[^"]*' ./*.csproj 2>/dev/null || echo 'unknown')\e[0m"
-          # List the packages after the build, the Godot editor has upgraded the project to the installed Godot version
-          dotnet list package
-        fi
-        echo -e "\e[94mProject cache successfully restored.\e[0m"
+        # The Godot editor run imports the project and upgrades the C# project to the Godot.NET.Sdk of the installed Godot version
+        for godot_project in "${godot_projects[@]}"; do
+          echo -e "\e[94mStart of the recovery of the project cache '${godot_project}' ...\e[0m"
+          $GODOT_BIN --path "${godot_project}" -e --headless --quit-after 2000
+          echo -e "\e[94mProject cache '${godot_project}' successfully restored.\e[0m"
+        done
+
+    - name: 'Build .Net Project'
+      if: ${{ steps.version_check.outcome == 'success' && !cancelled() && (inputs.godot-net == 'true' || inputs.godot-force-mono == 'true') }}
+      env:
+        ACTION_PROJECT_DIR: ${{ inputs.project_dir }}
+      shell: bash
+      run: |
+        cd "${ACTION_PROJECT_DIR}"
+        # Build after the Godot editor run has upgraded the C# project to the installed Godot version,
+        # `dotnet test --no-build` uses this build output
+        echo -e "\e[94mC# project(s) using:\e[0m"
+        find . -maxdepth 4 -name '*.csproj' -not -path './.*' -not -path '*/addons/*' \
+          -exec grep -Ho 'Godot.NET.Sdk/[^"]*' {} + || echo 'No Godot.NET.Sdk project found'
+        dotnet build
+        dotnet list package
 
     ## GDScript test run
     - name: 'Run GDScript Tests'

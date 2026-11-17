@@ -1,0 +1,24 @@
+<Project Sdk="Godot.NET.Sdk/4.2.1">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>11.0</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>NU1605</NoWarn>
+    <RootNamespace>SubProject</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--Required for GdUnit4-->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="gdUnit4.api" Version="4.3.*" />
+    <PackageReference Include="gdUnit4.test.adapter" Version="2.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\shared.csproj" />
+  </ItemGroup>
+
+</Project>
