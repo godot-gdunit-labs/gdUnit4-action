@@ -359,6 +359,25 @@ jobs:
             exit 1
           fi
 
+      - name: 'Verify the C# tests of the sub folder project have run'
+        shell: bash
+        run: |
+          report=./sub_project/reports/results.xml
+          if [[ ! -f "${report}" ]]; then
+            echo "ERROR: Expected the test report '${report}'"
+            exit 1
+          fi
+          counters=$(grep -o '<Counters [^>]*>' "${report}")
+          echo "Test results: ${counters}"
+          if [[ ! "${counters}" =~ total=\"1\" || ! "${counters}" =~ passed=\"1\" || ! "${counters}" =~ failed=\"0\" ]]; then
+            echo "ERROR: Expected one passed test"
+            exit 1
+          fi
+          if ! grep -q 'testName="[^"]*UsesSharedProject' "${report}"; then
+            echo "ERROR: Expected the test 'UsesSharedProject' in the test report"
+            exit 1
+          fi
+
 
   # run gdscript tests with using Godot Net executable
   unit-tests-force-godot-mono:
