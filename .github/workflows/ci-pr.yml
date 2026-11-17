@@ -340,7 +340,7 @@ jobs:
         timeout-minutes: 5
         uses: ./
         with:
-          godot-version: 4.5
+          godot-version: '4.7.2'
           godot-net: true
           version: 'latest'
           project_dir: './sub_project/'
@@ -354,8 +354,8 @@ jobs:
         run: |
           sdk=$(grep -o 'Godot.NET.Sdk/[^"]*' ./sub_project/game/game.csproj)
           echo "C# project uses: ${sdk}"
-          if [[ ! "${sdk}" =~ ^Godot\.NET\.Sdk/4\.5\. ]]; then
-            echo "ERROR: Expected the C# project to be upgraded to Godot.NET.Sdk/4.5.x"
+          if [[ ! "${sdk}" =~ ^Godot\.NET\.Sdk/4\.7\.2$ ]]; then
+            echo "ERROR: Expected the C# project to be upgraded to Godot.NET.Sdk/4.7.2"
             exit 1
           fi
 

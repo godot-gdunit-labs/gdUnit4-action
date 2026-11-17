@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="sub_project"
-config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
+config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
 
 [dotnet]
 
