@@ -63,7 +63,9 @@ inputs:
     required: false
     default: 'true'
   project_dir:
-    description: 'The project directory in which the action is to be executed. The specified directory must end with a path separator. e.g. ./MyProject/. For C# projects it can also be the .NET solution root that holds the Godot project in a sub folder.'
+    description: >-
+      The project directory in which the action is to be executed. The specified directory must end with a path separator. e.g. ./MyProject/.
+      For C# projects it can also be the .NET solution root that holds the Godot project in a sub folder.
     required: false
     default: './'
   report-name:
