@@ -79,9 +79,10 @@ The action can be configured using various inputs to suit your testing needs. He
 
 ### Essential Parameters
 
-| Parameter | Required | Default | Description                                |
-| --------- | -------- | ------- | ------------------------------------------ |
-| paths     | Yes      |         | Test directories (comma/newline-separated) |
+| Parameter   | Required | Default | Description                                                                                                                  |
+| ----------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| paths       | Yes      |         | Test directories (comma/newline-separated)                                                                                   |
+| project_dir | No       | ./      | Directory the action runs in, must end with `/`. The Godot project or, for C#, the .NET solution root (see [Custom Project Structure](#custom-project-structure)) |
 
 ### Godot Configuration
 
@@ -224,6 +225,29 @@ root/
     project_dir: './MyProject/'
     paths: 'res://tests'
 ```
+
+For C# projects, the `project_dir` can also be the root of a .NET solution that holds the Godot project in a sub folder:
+```bash
+root/
+  ├── MySolution.sln
+  ├── Game/
+  │   ├── project.godot
+  │   ├── Game.csproj
+  │   └── tests/
+  └── Shared/
+      └── Shared.csproj
+```
+
+```yaml
+- uses: godot-gdunit-labs/gdUnit4-action@v1
+  with:
+    godot-version: '4.7.2'
+    godot-net: true
+    project_dir: './'
+    paths: 'res://tests'
+```
+
+If the `project_dir` contains no `project.godot`, the action searches its sub folders for Godot projects, imports them and upgrades their C# projects to the `Godot.NET.Sdk` of the selected `godot-version`. The .NET solution is then built and tested from the `project_dir`.
 
 ## Troubleshooting
 
