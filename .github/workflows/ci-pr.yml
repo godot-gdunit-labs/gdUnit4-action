@@ -314,6 +314,71 @@ jobs:
           report-name: gdUnit4-custom-working-directory-net
 
 
+  # run C# tests on a .NET solution that holds the Godot project in a sub folder
+  unit-tests-godot-project-in-sub-folder:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+      checks: write
+      pull-requests: write
+      statuses: write
+    name: 'action on Godot project in a sub folder'
+
+    steps:
+      - name: 'Checkout gdUnit4-action'
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: 'Install sub folder test project'
+        shell: bash
+        run: |
+          mv -f .github/workflows/sub_project/ ./sub_project/
+
+      - name: 'Test gdUnit4-action: on Godot project in a sub folder C#'
+        timeout-minutes: 5
+        uses: ./
+        with:
+          godot-version: '4.7.2'
+          godot-net: true
+          version: 'latest'
+          project_dir: './sub_project/'
+          paths: 'res://tests/'
+          timeout: 2
+          publish-report: false
+          report-name: gdUnit4-godot-project-in-sub-folder
+
+      - name: 'Verify the C# project is upgraded to the installed Godot version'
+        shell: bash
+        run: |
+          sdk=$(grep -o 'Godot.NET.Sdk/[^"]*' ./sub_project/game/game.csproj)
+          echo "C# project uses: ${sdk}"
+          if [[ ! "${sdk}" =~ ^Godot\.NET\.Sdk/4\.7\.2$ ]]; then
+            echo "ERROR: Expected the C# project to be upgraded to Godot.NET.Sdk/4.7.2"
+            exit 1
+          fi
+
+      - name: 'Verify the C# tests of the sub folder project have run'
+        shell: bash
+        run: |
+          report=./sub_project/reports/results.xml
+          if [[ ! -f "${report}" ]]; then
+            echo "ERROR: Expected the test report '${report}'"
+            exit 1
+          fi
+          counters=$(grep -o '<Counters [^>]*>' "${report}")
+          echo "Test results: ${counters}"
+          if [[ ! "${counters}" =~ total=\"1\" || ! "${counters}" =~ passed=\"1\" || ! "${counters}" =~ failed=\"0\" ]]; then
+            echo "ERROR: Expected one passed test"
+            exit 1
+          fi
+          if ! grep -q 'testName="[^"]*UsesSharedProject' "${report}"; then
+            echo "ERROR: Expected the test 'UsesSharedProject' in the test report"
+            exit 1
+          fi
+
+
   # run gdscript tests with using Godot Net executable
   unit-tests-force-godot-mono:
     runs-on: ubuntu-24.04
@@ -541,6 +606,7 @@ jobs:
       - unit-tests-v6x
       - unit-tests-installed-version
       - unit-tests-custom-working-directory
+      - unit-tests-godot-project-in-sub-folder
       - unit-tests-force-godot-mono
       - action-fail-test
       - action-disable-report
